@@ -1,152 +1,160 @@
 # 🌿 MediTrack - Ayurvedic Hospital Inventory Management
 
-**MediTrack** is a professional desktop application for managing inventory, procurement, analytics and decision-support in an Ayurvedic hospital. It helps reduce manual work, stock errors, medicine expiry, unnecessary purchasing, and emergency shortages.
+**MediTrack** is a complete, working inventory management system for Ayurvedic hospitals. This lite version runs as a web application you can use immediately.
 
-## 🚀 Quick Start
+## ⚡ Quick Start (2 Minutes)
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v18 or higher)
+### 1. Install Node.js (one time)
+Download from https://nodejs.org (v18 or higher). After install, **close and reopen** your terminal.
 
-### One-Time Setup
+### 2. Open this folder in Command Prompt
+```cmd
+cd path\to\Meditrack
 ```
+
+### 3. Install dependencies (one time)
+```cmd
 npm install
-node server/seed.js
 ```
+This takes 30-60 seconds. Just wait.
 
-### Start MediTrack
-```
+### 4. Start the server
+```cmd
 node server/index.js
 ```
 
-Open your browser to: **http://localhost:3001**
+That's it! Open **http://localhost:3001** in Chrome/Edge.
 
-### Demo Login
+### 5. Login
+- **Email**: `admin@meditrack.local`
+- **Password**: `MediTrack@2024`
+
+✅ The database **auto-seeds itself** on first run with 10 Ayurvedic medicines, batches with varied expiry dates, departments, suppliers, and demo accounts.
+
+---
+
+## 📋 One-Click Launcher (Windows)
+
+Just double-click **`launch.bat`** - it runs everything for you: checks Node.js, installs deps, starts server, opens browser.
+
+---
+
+## 🎯 Demo Accounts
+
 | Role | Email | Password |
 |------|-------|----------|
-| Administrator | admin@meditrack.local | MediTrack@2024 |
+| **Administrator** | admin@meditrack.local | MediTrack@2024 |
 | Manager | manager@meditrack.local | manager123 |
 | Staff | staff@meditrack.local | staff123 |
 | Doctor | doctor@meditrack.local | doctor123 |
 
+---
+
 ## ✨ Features
 
-- **📊 Dashboard** - Real-time inventory overview with key metrics
-- **📦 Inventory Management** - Complete item tracking with categories, batches and locations
-- **📥 Stock In** - Record incoming inventory with batch tracking
-- **📤 Stock Out** - Issue stock with **FEFO** (First Expiry, First Out) recommendation
-- **⏰ Expiry Management** - Track expiring batches, generate alerts
-- **🏭 Supplier Management** - Manage suppliers, pricing and performance
-- **📋 Purchase Orders** - Create, approve and receive purchase orders
-- **🔄 Stock Transfers** - Redistribute stock between departments
-- **🤖 AI Purchase Advisor** - Smart recommendations for purchasing decisions
-- **📈 Analytics** - ABC-VED matrix, consumption trends, inventory valuation
-- **🚨 Emergency Readiness** - Automated emergency preparedness scoring
-- **💬 AI Assistant** - Natural language queries about inventory
-- **📄 Reports** - Generate reports for inventory, stock movements, expiry, wastage
-- **👥 User Management** - Role-based access control
-- **📝 Audit Log** - Complete activity tracking
-- **🗑️ Wastage Tracking** - Record expired, damaged or lost inventory
+- ✅ **Dashboard** with real-time metrics and emergency readiness score
+- ✅ **Inventory** with status (Healthy, Low, Critical, Out of Stock, Overstocked)
+- ✅ **Medicine catalog** with Ayurvedic categories
+- ✅ **Stock In** with batch tracking and expiry recording
+- ✅ **Stock Out (FEFO)** - automatically picks earliest expiry batch first
+- ✅ **Expiry management** - tracks days remaining and alerts
+- ✅ **Suppliers** management
+- ✅ **Purchase Orders** - create, approve, receive
+- ✅ **Stock Transfers** for redistribution
+- ✅ **AI Purchase Advisor** - recommends BUY NOW/BUY SOON/WAIT actions
+- ✅ **AI Assistant** - ask questions in plain English
+- ✅ **Emergency Readiness** score (0-100%)
+- ✅ **Analytics** - ABC-VED matrix, consumption trends
+- ✅ **Reports** - 7 types (inventory, stock-in, stock-out, expiry, wastage, purchase, audit)
+- ✅ **User management** with roles (ADMIN/MANAGER/STAFF/DOCTOR)
+- ✅ **Audit log** of all activity
+- ✅ **Notifications** for low stock and expiry
 
-## 🏗️ Architecture
+---
 
-```
-┌─────────────────┐
-│   Frontend      │  HTML/CSS/JS SPA
-│   (Browser)     │
-└────────┬────────┘
-         │ HTTP / REST API
-┌────────▼────────┐
-│   Express API   │  Node.js Backend
-│   (server/)     │
-└────────┬────────┘
-         │
-┌────────▼────────┐
-│   SQLite DB     │  sql.js (in-process)
-│   (data/)       │
-└─────────────────┘
-```
+## 🏥 What's Pre-loaded
 
-## 🗄️ Database
+The auto-seed creates this real data:
 
-SQLite database stored locally at `data/meditrack.db`. Key tables:
+**10 Ayurvedic Medicines:**
+- Triphala Churna, Trikatu Churna, Sitopaladi Churna
+- Chyavanprash Vati
+- Mahanarayan Taila, Karpooradi Taila
+- Dashamoola Kashaya
+- Ashwagandha Root
+- Surgical Gloves, Bandage Roll
 
-- `users` - User accounts and roles
-- `medicines` - Medicine/item master data
-- `categories` - Medicine categories (Churna, Vati, Taila, etc.)
-- `batches` - Inventory batches with expiry tracking
-- `inventory` - Current stock levels
-- `suppliers` - Vendor management
-- `purchase_orders` - Purchase order management
-- `departments` - Hospital departments
-- `stock_in_transactions` - Stock receipt records
-- `stock_out_transactions` - Stock issue records
-- `stock_transfers` - Inter-department transfers
-- `wastage` - Expired/damaged stock records
-- `audit_logs` - Complete activity trail
-- `alerts` - System notifications
-- `forecasts` - AI demand predictions
+**Including scenarios for:**
+- 🔴 Critical stock (Sitopaladi, Karpooradi, Gloves)
+- ⏰ Expiring soon (40-60 days)
+- 🗑️ Expired batches
+- ✅ Healthy stock
+- 🔵 Overstocked items
+- 📦 Multiple batches per medicine (FEFO testing)
 
-## � Configuring
+---
 
-Set these environment variables (optional):
+## 🛑 To Stop the Server
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `MEDITRACK_PORT` | `3001` | API server port |
-| `MEDITRACK_DATA` | `./data` | Database directory |
-| `JWT_SECRET` | `meditrack-secret-2024` | JWT signing key |
+Press **Ctrl+C** in the terminal window.
 
-## 📦 Builing Windows Installer
+---
+
+## 🔄 To Reset the Database
+
+Stop the server, delete `data/meditrack.db`, then start the server again. It will auto-seed fresh demo data.
+
+---
+
+## 📁 Project Structure
 
 ```
-npm run package
+Meditrack/
+├── server/
+│   ├── index.js       ← Main API server (everything in one file)
+│   └── database.js    ← SQLite database with schema
+├── frontend/
+│   └── index.html     ← Single-page app
+├── data/
+│   └── meditrack.db   ← Created automatically on first run
+├── node_modules/      ← Created by npm install
+├── package.json       ← Dependencies
+└── launch.bat         ← Windows one-click launcher
 ```
 
-This creates `MediTrack-Setup.exe` in the `release/` folder using electron-builder.
+---
 
-## 🧪 Running Tests
+## 🐛 Troubleshooting
 
+**"Cannot find module" errors:**
+```cmd
+npm install
 ```
-node server/seed.js   # Reset database with demo data
+
+**"Port 3001 already in use":**
+Close other programs using port 3001, or set a different port:
+```cmd
+set MEDITRACK_PORT=3002
+node server/index.js
 ```
 
-## 📋 Demo Scenarios
+**Browser shows old data after reset:**
+Delete `data/meditrack.db` and restart. Also clear browser localStorage (F12 → Application → Clear storage) or use Incognito mode.
 
-1. **Login** - Use admin@meditrack.local / MediTrack@2024
-2. **Dashboard** - See inventory summary and emergency readiness
-3. **Inventory** - Browse all items with stock levels
-4. **Stock In** - Add new stock with batch details
-5. **Stock Out** - Issue stock - FEFO automatically selects earliest expiry batch
-6. **AI Advisor** - View purchase recommendations
-7. **Emergency** - Check emergency readiness score
-8. **ABC-VED** - View analytics matrix
-9. **Reports** - Generate inventory report
-10. **Audit** - View activity log
+**Login fails with correct credentials:**
+Make sure the server actually started (you should see "MediTrack v1.0 - READY" in the terminal). Try Incognito/Private browsing in your browser.
 
-## 🔒 Security
+---
 
-- Passwords hashed with bcrypt
-- JWT-based authentication
-- Role-based access control (ADMIN, MANAGER, STAFF, DOCTOR)
-- Audit logging for all critical actions
-- Input validation on all endpoints
+## 🏗️ Tech Stack
 
-## 🤖 AI Features
+- Node.js + Express
+- SQLite (via sql.js, pure JavaScript)
+- JWT authentication
+- bcrypt password hashing
+- Vanilla JavaScript frontend (no build step)
 
-MediTrack includes practical AI/ML features:
-
-- **Purchase Advisor** - Analyzes current stock, consumption patterns, pending orders and expiry risk to recommend purchasing actions
-- **Emergency Readiness** - Calculates emergency readiness score based on inventory levels of critical items
-- **Forecasting** - Moving average-based demand forecasting with confidence indicators
-- ** Assistant** - Natural language interface for inventory queries
-
-## 📱 Future Integrations
-
-- Barcode/QR code scanning
-- IoT sensor monitoring (temperature, humidity)
-- Mobile application
-- Hospital ERP integration
-- Automated purchase order generation
+---
 
 ## License
 

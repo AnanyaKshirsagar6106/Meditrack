@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MediTrack - Ayurvedic Hospital Inventory</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
@@ -19,7 +18,7 @@
 }
 body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: var(--gray-900); background: var(--gray-50); }
 .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); }
-.login-card { background: white; padding: 2.5rem; border-radius: 16px; width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.login-card { background: white; padding: 2.5rem; border-radius: 16px; width: 400px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
 .login-card h1 { color: var(--primary); font-size: 1.8rem; margin-bottom: 0.5rem; }
 .login-card p { color: var(--gray-500); margin-bottom: 1.5rem; }
 .form-group { margin-bottom: 1rem; }
@@ -36,7 +35,7 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: var
 .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.8rem; }
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .app { display: flex; height: 100vh; overflow: hidden; }
-.sidebar { width: var(--sidebar-width); background: var(--gray-900); color: white; display: flex; flex-direction: column; overflow-y: auto; }
+.sidebar { width: var(--sidebar-width); background: var(--gray-900); color: white; display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; }
 .sidebar-header { padding: 1.25rem; border-bottom: 1px solid var(--gray-700); }
 .sidebar-header h2 { font-size: 1.25rem; color: var(--gold); }
 .sidebar-header small { color: var(--gray-400); font-size: 0.75rem; }
@@ -45,7 +44,7 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: var
 .sidebar-nav .nav-item:hover { background: var(--gray-700); color: white; }
 .sidebar-nav .nav-item.active { background: var(--primary); color: white; }
 .sidebar-footer { padding: 1rem; border-top: 1px solid var(--gray-700); font-size: 0.8rem; color: var(--gray-400); }
-.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.5rem; background: white; border-bottom: 1px solid var(--gray-200); }
 .topbar h3 { font-size: 1.1rem; font-weight: 600; }
 .topbar-right { display: flex; align-items: center; gap: 1rem; }
@@ -54,8 +53,8 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: var
 .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.25rem; margin-bottom: 1rem; }
 .card h4 { font-size: 0.9rem; color: var(--gray-500); margin-bottom: 0.25rem; }
 .card .value { font-size: 1.75rem; font-weight: 700; }
-.grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
-.grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 table { width: 100%; border-collapse: collapse; }
 table th { text-align: left; padding: 0.625rem 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--gray-500); border-bottom: 2px solid var(--gray-200); }
@@ -71,8 +70,9 @@ table tr:hover { background: var(--gray-50); }
 .status-low { border-left: 4px solid var(--warning); }
 .status-healthy { border-left: 4px solid var(--primary); }
 .status-out { border-left: 4px solid var(--gray-400); }
-.search-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-.search-bar input { flex: 1; padding: 0.5rem 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.875rem; }
+.status-overstocked { border-left: 4px solid var(--info); }
+.search-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.search-bar input { flex: 1; min-width: 200px; padding: 0.5rem 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.875rem; }
 .search-bar select { padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 8px; }
 .mt-1 { margin-top: 0.5rem; } .mt-2{margin-top:1rem} .mb-1{margin-bottom:0.5rem} .mb-2{margin-bottom:1rem}
 .text-center { text-align: center; }
@@ -82,302 +82,562 @@ table tr:hover { background: var(--gray-50); }
 .items-center { align-items: center; }
 .justify-between { justify-content: space-between; }
 .w-full { width: 100%; }
-.loading { text-align: center; padding: 3rem; color: var(--gray-400); }
+.loading { text-align: center; padding: 3rem; color: var(--gray-400); font-size: 0.9rem; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .modal { background: white; border-radius: 16px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; padding: 2rem; }
 .modal h3 { margin-bottom: 1rem; }
-.toast { position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 1.5rem; border-radius: 8px; color: white; font-size: 0.875rem; z-index: 2000; animation: slideIn 0.3s; }
+.toast { position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 1.5rem; border-radius: 8px; color: white; font-size: 0.875rem; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.3s; max-width: 400px; }
 .toast-success { background: var(--primary); }
 .toast-error { background: var(--danger); }
 .toast-warning { background: var(--warning); color: var(--gray-900); }
 @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.alert-banner { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.875rem; }
+.alert-banner { padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.875rem; }
 .alert-critical { background: #fee2e2; color: #991b1b; }
 .alert-warning { background: #fef3c7; color: #92400e; }
 .alert-info { background: #dbeafe; color: #1e40af; }
+table table { background: transparent; }
 @media (max-width: 768px) { .sidebar { display: none; } .grid-2 { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
+console.log('MediTrack starting...');
+
 // ============ STATE ============
-const state = { token: null, user: null, page: 'login', data: {} };
+const state = { token: null, user: null, page: 'login', data: {}, loading: false };
+
+// Detect API base URL - localhost only
 const API = window.location.origin + '/api';
+console.log('API endpoint:', API);
 
 // ============ HELPERS ============
-function api(path, opts = {}) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
-  return fetch(API + path, { ...opts, headers }).then(r => r.json().catch(() => ({ error: r.statusText })));
+async function api(path, opts = {}) {
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
+    const res = await fetch(API + path, { ...opts, headers });
+    if (!res.ok) {
+      const text = await res.text();
+      try { return JSON.parse(text); } catch { return { error: 'HTTP ' + res.status }; }
+    }
+    return await res.json();
+  } catch (err) {
+    console.error('API error:', err);
+    return { error: 'Network error: ' + err.message };
+  }
 }
 
 function showToast(msg, type = 'success') {
-  const el = document.createElement('div'); el.className = `toast toast-${type}`; el.textContent = msg;
-  document.body.appendChild(el); setTimeout(() => el.remove(), 3000);
+  const el = document.createElement('div');
+  el.className = 'toast toast-' + type;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
 }
 
-function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  const d = document.createElement('div');
+  d.textContent = String(str);
+  return d.innerHTML;
+}
 
-// ============ PAGES ============
-const pages = {};
+function statusBadge(status) {
+  const map = {
+    'healthy': ['Healthy', 'badge-green'],
+    'low': ['Low', 'badge-yellow'],
+    'critical': ['Critical', 'badge-red'],
+    'outOfStock': ['Out of Stock', 'badge-gray'],
+    'overstocked': ['Overstocked', 'badge-blue'],
+    'SAFE': ['SAFE', 'badge-green'],
+    'WARNING': ['WARNING', 'badge-yellow'],
+    'CRITICAL': ['CRITICAL', 'badge-red'],
+    'draft': ['Draft', 'badge-gray'],
+    'pending': ['Pending', 'badge-yellow'],
+    'approved': ['Approved', 'badge-blue'],
+    'ordered': ['Ordered', 'badge-blue'],
+    'partial': ['Partial', 'badge-yellow'],
+    'received': ['Received', 'badge-green'],
+    'completed': ['Completed', 'badge-green'],
+    'login': ['Login', 'badge-gray'],
+    'logout': ['Logout', 'badge-gray'],
+    'create': ['Create', 'badge-blue'],
+    'update': ['Update', 'badge-blue'],
+    'delete': ['Delete', 'badge-red'],
+    'stockIn': ['Stock In', 'badge-green'],
+    'stockOut': ['Stock Out', 'badge-yellow'],
+    'transfer': ['Transfer', 'badge-blue'],
+    'wastage': ['Wastage', 'badge-red'],
+    'buy': ['Buy', 'badge-green'],
+    'sell': ['Sell', 'badge-yellow']
+  };
+  const s = (status || '').toString().toLowerCase();
+  let m = map[status] || map[s];
+  if (!m) {
+    m = [status, 'badge-gray'];
+  }
+  return '<span class="badge ' + m[1] + '">' + escapeHtml(m[0]) + '</span>';
+}
 
-// --- LOGIN PAGE ---
-pages.login = () => {
+function formatDate(date) {
+  if (!date) return '-';
+  try {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '-';
+    return d.toISOString().split('T')[0];
+  } catch (e) { return '-'; }
+}
+
+function formatCurrency(num) {
+  return '₹' + Number(num || 0).toLocaleString('en-IN');
+}
+
+// ============ LOGIN PAGE ============
+function renderLogin() {
   const app = document.getElementById('app');
   app.innerHTML = `
     <div class="login-page">
       <div class="login-card">
-        <div style="text-align:center">
+        <div style="text-align:center;margin-bottom:1.5rem">
           <h1>🌿 MediTrack</h1>
-          <p>Ayurvedic Hospital Inventory Management</p>
+          <p>Ayurvedic Hospital Inventory Management System</p>
         </div>
-        <div id="login-error" class="hidden alert-banner alert-critical"></div>
+        <div id="login-error" class="alert-banner alert-critical hidden"></div>
         <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="login-email" value="admin@meditrack.local" placeholder="admin@meditrack.local">
+          <label>Email Address</label>
+          <input type="email" id="login-email" value="admin@meditrack.local" autocomplete="username">
         </div>
         <div class="form-group">
           <label>Password</label>
-          <input type="password" id="login-password" value="MediTrack@2024" placeholder="Enter password">
+          <input type="password" id="login-password" value="MediTrack@2024" autocomplete="current-password">
         </div>
-        <button class="btn btn-primary w-full" onclick="handleLogin()">Login to MediTrack</button>
-        <div style="margin-top:1rem;font-size:0.8rem;color:var(--gray-400);text-align:center">
-          Demo: admin@meditrack.local / MediTrack@2024
+        <button class="btn btn-primary w-full" onclick="window.handleLogin()" id="login-btn">🔐 Login to MediTrack</button>
+        <div style="margin-top:1.25rem;padding:0.75rem;background:var(--gray-50);border-radius:8px;font-size:0.8rem;color:var(--gray-500);text-align:center">
+          <strong style="color:var(--gray-700)">Demo Credentials:</strong><br>
+          admin@meditrack.local / MediTrack@2024
         </div>
+        <div id="server-status" style="margin-top:0.75rem;font-size:0.75rem;text-align:center"></div>
       </div>
     </div>`;
-};
 
-window.handleLogin = async () => {
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
+  // Check server status
+  fetch(API + '/system/settings').then(r => {
+    document.getElementById('server-status').innerHTML = '✅ Server connected';
+    document.getElementById('server-status').style.color = 'var(--primary)';
+  }).catch(() => {
+    document.getElementById('server-status').innerHTML = '⚠️ Server unreachable - is the window open?';
+    document.getElementById('server-status').style.color = 'var(--danger)';
+  });
+
+  // Submit on Enter
+  setTimeout(() => {
+    const passInput = document.getElementById('login-password');
+    if (passInput) {
+      passInput.addEventListener('keypress', e => {
+        if (e.key === 'Enter') window.handleLogin();
+      });
+    }
+  }, 100);
+}
+
+window.handleLogin = async function() {
+  const btn = document.getElementById('login-btn');
+  const email = (document.getElementById('login-email') || {}).value || '';
+  const password = (document.getElementById('login-password') || {}).value || '';
   const errEl = document.getElementById('login-error');
-  errEl.classList.add('hidden');
-  const res = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-  if (res.token) {
-    state.token = res.token; state.user = res.user;
-    showToast('Welcome, ' + res.user.name + '!');
-    renderApp();
-  } else {
-    errEl.textContent = res.error || 'Login failed';
-    errEl.classList.remove('hidden');
+  if (errEl) errEl.classList.add('hidden');
+
+  if (!email || !password) {
+    if (errEl) { errEl.textContent = 'Email and password required'; errEl.classList.remove('hidden'); }
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Logging in...'; }
+
+  try {
+    const res = await fetch(window.location.origin + '/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (data.token) {
+      state.token = data.token;
+      state.user = data.user;
+      state.page = 'dashboard';
+      showToast('Welcome, ' + data.user.name + '!');
+      renderApp();
+    } else {
+      if (btn) { btn.disabled = false; btn.textContent = '🔐 Login to MediTrack'; }
+      if (errEl) { errEl.textContent = data.error || 'Login failed'; errEl.classList.remove('hidden'); }
+    }
+  } catch (err) {
+    if (btn) { btn.disabled = false; btn.textContent = '🔐 Login to MediTrack'; }
+    if (errEl) { errEl.textContent = 'Cannot reach server. Make sure MediTrack server is running.'; errEl.classList.remove('hidden'); }
   }
 };
 
-// --- SIDEBAR ---
-function Sidebar() {
-  const items = [
-    { id: 'dashboard', label: '📊 Dashboard', icon: '📊' },
-    { id: 'inventory', label: '📦 Inventory', icon: '📦' },
-    { id: 'medicines', label: '💊 Medicines', icon: '💊' },
-    { id: 'stock-in', label: '📥 Stock In', icon: '📥' },
-    { id: 'stock-out', label: '📤 Stock Out', icon: '📤' },
-    { id: 'expiry', label: '⏰ Expiry', icon: '⏰' },
-    { id: 'suppliers', label: '🏭 Suppliers', icon: '🏭' },
-    { id: 'purchase-orders', label: '📋 Purchase Orders', icon: '📋' },
-    { id: 'transfers', label: '🔄 Transfers', icon: '🔄' },
-    { id: 'ai-advisor', label: '🤖 AI Advisor', icon: '🤖' },
-    { id: 'analytics', label: '📈 Analytics', icon: '📈' },
-    { id: 'reports', label: '📄 Reports', icon: '📄' },
-    { id: 'alerts', label: '🔔 Alerts', icon: '🔔' },
-    { id: 'users', label: '👥 Users', icon: '👥' },
-    { id: 'audit', label: '📝 Audit', icon: '📝' },
+// ============ SIDEBAR ============
+function getNavItems() {
+  return [
+    { id: 'dashboard', label: '📊 Dashboard' },
+    { id: 'inventory', label: '📦 Inventory' },
+    { id: 'medicines', label: '💊 Medicines' },
+    { id: 'stock-in', label: '📥 Stock In' },
+    { id: 'stock-out', label: '📤 Stock Out' },
+    { id: 'expiry', label: '⏰ Expiry' },
+    { id: 'suppliers', label: '🏭 Suppliers' },
+    { id: 'purchase-orders', label: '📋 Purchase Orders' },
+    { id: 'transfers', label: '🔄 Transfers' },
+    { id: 'ai-advisor', label: '🤖 AI Advisor' },
+    { id: 'analytics', label: '📈 Analytics' },
+    { id: 'reports', label: '📄 Reports' },
+    { id: 'alerts', label: '🔔 Alerts' },
+    { id: 'users', label: '👥 Users' },
+    { id: 'audit', label: '📝 Audit Log' }
   ];
-  return items.map(i => `<div class="nav-item ${state.page===i.id?'active':''}" onclick="navigate('${i.id}')">${i.label}</div>`).join('');
 }
 
-function navigate(page) { state.page = page; renderApp(); }
-window.navigate = navigate;
+function getPageTitle() {
+  const titles = {
+    'dashboard': '📊 Dashboard',
+    'inventory': '📦 Inventory',
+    'medicines': '💊 Medicines',
+    'stock-in': '📥 Stock In',
+    'stock-out': '📤 Stock Out',
+    'expiry': '⏰ Expiry Management',
+    'suppliers': '🏭 Suppliers',
+    'purchase-orders': '📋 Purchase Orders',
+    'transfers': '🔄 Stock Transfers',
+    'ai-advisor': '🤖 AI Purchase Advisor',
+    'analytics': '📈 Analytics',
+    'reports': '📄 Reports',
+    'alerts': '🔔 Notifications',
+    'users': '👥 User Management',
+    'audit': '📝 Audit Log'
+  };
+  return titles[state.page] || 'MediTrack';
+}
 
-// --- DASHBOARD ---
-pages.dashboard = async () => {
+window.navigate = function(page) {
+  state.page = page;
+  renderApp();
+  return false;
+};
+
+// ============ MAIN APP RENDER ============
+function renderApp() {
+  const app = document.getElementById('app');
+  if (!state.token || !state.user) {
+    renderLogin();
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="app">
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h2>🌿 MediTrack</h2>
+          <small>Ayurvedic Hospital</small>
+        </div>
+        <nav class="sidebar-nav">
+          ${getNavItems().map(i => `<div class="nav-item ${state.page === i.id ? 'active' : ''}" data-nav="${i.id}" style="cursor:pointer">${i.label}</div>`).join('')}
+        </nav>
+        <div class="sidebar-footer">
+          <div style="font-size:0.85rem;color:white;margin-bottom:0.25rem"><strong>${escapeHtml(state.user.name || '')}</strong></div>
+          <div style="font-size:0.75rem;color:var(--gray-400)">${escapeHtml(state.user.role || '')}</div>
+          <button class="btn btn-sm" style="margin-top:0.5rem;width:100%;background:transparent;border:1px solid var(--gray-600);color:white" onclick="window.logout()">🚪 Logout</button>
+        </div>
+      </div>
+      <div class="main">
+        <div class="topbar">
+          <h3>${getPageTitle()}</h3>
+          <div class="topbar-right">
+            <span class="user-info"><strong>${escapeHtml(state.user.name || '')}</strong> (${escapeHtml(state.user.role || '')})</span>
+          </div>
+        </div>
+        <div class="content" id="main-content">
+          <div class="loading">Loading ${getPageTitle()}...</div>
+        </div>
+      </div>
+    </div>`;
+
+  // Attach click handlers to nav items
+  document.querySelectorAll('[data-nav]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      window.navigate(el.dataset.nav);
+    });
+  });
+
+  // Load page content
+  loadPageContent();
+}
+
+async function loadPageContent() {
   const main = document.getElementById('main-content');
-  main.innerHTML = '<div class="loading">Loading dashboard...</div>';
-  const data = await api('/analytics/dashboard');
-  const summary = await api('/inventory/summary');
-  
+  if (!main) { console.error('main-content not found'); return; }
+
+  main.innerHTML = '<div class="loading">⏳ Loading ' + getPageTitle() + '...</div>';
+
+  try {
+    switch (state.page) {
+      case 'dashboard': await loadDashboard(); break;
+      case 'inventory': await loadInventory(); break;
+      case 'medicines': await loadMedicines(); break;
+      case 'stock-in': renderStockIn(); break;
+      case 'stock-out': renderStockOut(); break;
+      case 'expiry': await loadExpiry(); break;
+      case 'suppliers': await loadSuppliers(); break;
+      case 'purchase-orders': await loadPurchaseOrders(); break;
+      case 'transfers': await loadTransfers(); break;
+      case 'ai-advisor': await loadAIAdvisor(); break;
+      case 'analytics': await loadAnalytics(); break;
+      case 'reports': renderReports(); break;
+      case 'alerts': await loadAlerts(); break;
+      case 'users': await loadUsers(); break;
+      case 'audit': await loadAudit(); break;
+      default: main.innerHTML = '<div class="empty">Select a page</div>';
+    }
+  } catch (err) {
+    console.error('Page load error:', err);
+    main.innerHTML = '<div class="alert-banner alert-critical">Error loading page: ' + err.message + '</div>';
+  }
+}
+
+window.logout = async function() {
+  try { await api('/auth/logout', { method: 'POST' }); } catch(e) {}
+  state.token = null;
+  state.user = null;
+  state.page = 'login';
+  renderApp();
+};
+
+// ============ PAGE: DASHBOARD ============
+async function loadDashboard() {
+  const main = document.getElementById('main-content');
+  if (!main) return;
+  try {
+    const data = await api('/analytics/dashboard');
+    const summary = await api('/inventory/summary');
+    main.innerHTML = `
+      <div class="grid-4 mb-2">
+        ${statCard('Total Items', summary.totalItems || 0, '📦', 'var(--primary)')}
+        ${statCard('Inventory Value', formatCurrency(summary.totalValue), '💰', 'var(--gold)')}
+        ${statCard('Low Stock', summary.lowStock || 0, '⚠️', 'var(--warning)')}
+        ${statCard('Critical', summary.critical || 0, '🚨', 'var(--danger)')}
+        ${statCard('Out of Stock', summary.outOfStock || 0, '❌', 'var(--gray-500)')}
+        ${statCard('Expired', summary.expiredItems || 0, '🗑️', 'var(--gray-400)')}
+        ${statCard('Expiring Soon', summary.expiringSoon || 0, '⏰', 'var(--info)')}
+        ${statCard('Emergency Score', (data.readinessScore || 0) + '%', '🛡️', (data.readinessScore || 0) >= 80 ? 'var(--primary)' : (data.readinessScore || 0) >= 50 ? 'var(--warning)' : 'var(--danger)')}
+      </div>
+      <div class="grid-2 mb-2">
+        ${statCard('Today\'s Stock In', data.todayStockIn || 0, '📥', 'var(--primary)')}
+        ${statCard('Today\'s Stock Out', data.todayStockOut || 0, '📤', 'var(--info)')}
+        ${statCard('Pending POs', data.pendingPOs || 0, '📋', 'var(--gold)')}
+        ${statCard('Expired Value', formatCurrency(summary.expiredValue), '💸', 'var(--danger)')}
+      </div>
+      <div class="card mb-2">
+        <h4 style="font-size:1rem;color:var(--gray-700);margin-bottom:0.75rem">🛡️ Emergency Readiness Score</h4>
+        <div style="height:16px;background:var(--gray-200);border-radius:8px;overflow:hidden">
+          <div style="height:100%;width:${Math.min(100, data.readinessScore || 0)}%;background:${(data.readinessScore || 0) >= 80 ? 'var(--primary)' : (data.readinessScore || 0) >= 50 ? 'var(--warning)' : 'var(--danger)'};border-radius:8px;transition:width 0.5s"></div>
+        </div>
+        <div style="margin-top:0.5rem;font-size:0.85rem;color:var(--gray-600)">
+          Status: <strong>${data.readinessScore >= 80 ? '✅ SAFE' : data.readinessScore >= 50 ? '⚠️ WARNING' : '🚨 CRITICAL'}</strong>
+        </div>
+      </div>
+      <div class="card mb-2">
+        <h4 style="font-size:1rem;color:var(--gray-700);margin-bottom:0.75rem">🏥 Department Consumption</h4>
+        <table><thead><tr><th>Department</th><th>Total Issued (units)</th></tr></thead><tbody>
+          ${(data.deptUsage || []).map(d => `<tr><td>${escapeHtml(d.name)}</td><td><strong>${d.total}</strong></td></tr>`).join('') || '<tr><td colspan="2" class="text-center" style="color:var(--gray-400);padding:1.5rem">No department usage data yet</td></tr>'}
+        </tbody></table>
+      </div>
+      <div class="card">
+        <h4 style="font-size:1rem;color:var(--gray-700);margin-bottom:0.75rem">🚨 Critical Items</h4>
+        ${(data.shortageItems > 0) ? '<div style="color:var(--danger);font-size:0.85rem"><strong>' + data.shortageItems + '</strong> items are below minimum stock. <a href="#" onclick="window.navigate(\\'inventory\\');return false" style="color:var(--primary);text-decoration:underline">View in Inventory →</a></div>' : '<div style="color:var(--primary)">✅ No critical shortages</div>'}
+      </div>`;
+  } catch (err) {
+    main.innerHTML = '<div class="alert-banner alert-critical">Failed to load dashboard: ' + err.message + '</div>';
+  }
+}
+
+function statCard(title, value, icon, color) {
+  return `<div class="card" style="border-left:4px solid ${color}">
+    <h4 style="margin-bottom:0.5rem">${icon} ${escapeHtml(title)}</h4>
+    <div class="value" style="color:${color}">${value}</div>
+  </div>`;
+}
+
+// ============ PAGE: INVENTORY ============
+async function loadInventory() {
+  const main = document.getElementById('main-content');
+  if (!main) return;
   main.innerHTML = `
-    <div class="grid-4 mb-2">
-      ${card('Total Items', summary.totalItems || 0, '📦', 'var(--primary)')}
-      ${card('Inventory Value', '₹' + ((summary.totalValue||0).toLocaleString('en-IN')), '💰', 'var(--gold)')}
-      ${card('Low Stock', summary.lowStock||0, '⚠️', 'var(--warning)')}
-      ${card('Critical', summary.critical||0, '🚨', 'var(--danger)')}
-      ${card('Out of Stock', summary.outOfStock||0, '❌', 'var(--gray-500)')}
-      ${card('Expired', summary.expiredItems||0, '🗑️', 'var(--gray-400)')}
-      ${card('Expiring Soon', summary.expiringSoon||0, '⏰', 'var(--info)')}
-      ${card('Emergency Score', data.readinessScore||0 + '%', '🛡️', data.readinessScore >= 80 ? 'var(--primary)' : data.readinessScore >= 50 ? 'var(--warning)' : 'var(--danger)')}
+    <div class="search-bar">
+      <input type="text" id="inv-search" placeholder="🔍 Search inventory..." onkeyup="window.filterInventory()">
+      <select id="inv-filter" onchange="window.filterInventory()">
+        <option value="">All Status</option>
+        <option value="healthy">🟢 Healthy</option>
+        <option value="low">🟡 Low</option>
+        <option value="critical">🔴 Critical</option>
+        <option value="outOfStock">⚫ Out of Stock</option>
+        <option value="overstocked">🔵 Overstocked</option>
+      </select>
+      <button class="btn btn-primary" onclick="window.loadPageContent()">🔄 Refresh</button>
     </div>
-    <div class="grid-2 mb-2">
-      <div class="card"><h4>📥 Today's Stock In</h4><div class="value">${data.todayStockIn||0}</div></div>
-      <div class="card"><h4>📤 Today's Stock Out</h4><div class="value">${data.todayStockOut||0}</div></div>
-      <div class="card"><h4>📋 Pending POs</h4><div class="value">${data.pendingPOs||0}</div></div>
-      <div class="card"><h4>🛡️ Readiness</h4><div class="value" style="color:${data.readinessScore>=80?'var(--primary)':data.readinessScore>=50?'var(--warning)':'var(--danger)'}">${data.readinessScore||0}%</div></div>
-    </div>
-    <div class="card">
-      <div class="flex justify-between items-center mb-1">
-        <h4>Emergency Readiness: <strong>${data.readinessScore>=80?'✅ SAFE':data.readinessScore>=50?'⚠️ WARNING':'🚨 CRITICAL'}</strong></h4>
-      </div>
-      <div style="height:12px;background:var(--gray-200);border-radius:6px;overflow:hidden">
-        <div style="height:100%;width:${Math.min(100,data.readinessScore||0)}%;background:${data.readinessScore>=80?'var(--primary)':data.readinessScore>=50?'var(--warning)':'var(--danger)'};border-radius:6px;transition:width 0.5s"></div>
-      </div>
-      <div style="font-size:0.85rem;color:var(--gray-500);margin-top:0.5rem">
-        ${data.criticalItems ? data.criticalItems.map(i => `🚨 ${escapeHtml(i.medicineName)}: ${i.currentStock} units (min: ${i.minRequired})`).join('<br>') : ''}
-      </div>
-    </div>
-    <div class="card">
-      <h4 class="mb-1">Department Usage</h4>
-      <table><thead><tr><th>Department</th><th>Total Issued</th></tr></thead><tbody>
-        ${(data.deptUsage||[]).map(d => `<tr><td>${escapeHtml(d.name)}</td><td>${d.total}</td></tr>`).join('') || '<tr><td colspan="2" class="text-center" style="color:var(--gray-400)">No data</td></tr>'}
-      </tbody></table>
-    </div>`;
-};
-
-function card(title, value, icon, color) {
-  return `<div class="card" style="border-left:4px solid ${color||'var(--gray-300)'}"><h4>${icon||''} ${escapeHtml(title)}</h4><div class="value">${value}</div></div>`;
+    <div id="inv-content"><div class="loading">Loading inventory...</div></div>`;
+  await filterInventory();
 }
 
-// --- INVENTORY ---
-pages.inventory = async () => {
-  const main = document.getElementById('main-content');
-  main.innerHTML = `<div class="search-bar"><input type="text" id="inv-search" placeholder="Search inventory..." onkeyup="loadInventory()">
-    <select id="inv-filter" onchange="loadInventory()"><option value="">All Status</option><option value="healthy">Healthy</option><option value="low">Low</option><option value="critical">Critical</option><option value="outOfStock">Out of Stock</option><option value="overstocked">Overstocked</option></select></div>
-    <div id="inv-table"><div class="loading">Loading...</div></div>`;
-  await loadInventory();
-};
-
-window.loadInventory = async () => {
-  const search = document.getElementById('inv-search')?.value || '';
-  const el = document.getElementById('inv-table');
+window.filterInventory = async function() {
+  const el = document.getElementById('inv-content');
   if (!el) return;
+  const search = (document.getElementById('inv-search')?.value) || '';
+  const filter = document.getElementById('inv-filter')?.value || '';
   el.innerHTML = '<div class="loading">Loading...</div>';
-  const data = await api(`/inventory?search=${encodeURIComponent(search)}`);
-  el.innerHTML = `<div style="font-size:0.85rem;color:var(--gray-500);margin-bottom:0.5rem">${data.length} items</div>
-    <table><thead><tr><th>Medicine</th><th>Category</th><th>Stock</th><th>Min</th><th>Max</th><th>Status</th><th>Value</th><th>Action</th></tr></thead><tbody>
-    ${data.map(i => `<tr class="status-${i.invStatus}">
-      <td><strong>${escapeHtml(i.medicineName)}</strong></td>
-      <td>${escapeHtml(i.categoryName||'')}</td>
-      <td><strong>${i.totalQuantity}</strong> ${escapeHtml(i.unit||'')}</td>
-      <td>${i.minStock}</td>
-      <td>${i.maxStock}</td>
-      <td>${statusBadge(i.invStatus)}</td>
-      <td>₹${((i.totalQuantity||0)*(i.purchasePrice||0)).toLocaleString('en-IN')}</td>
-      <td><button class="btn btn-sm btn-outline" onclick="navigate('medicines');setTimeout(()=>loadMedicineDetails('${i.medicineId}'),100)">View</button></td>
-    </tr>`).join('') || '<tr><td colspan="8" class="text-center" style="color:var(--gray-400);padding:2rem">No inventory items found</td></tr>'}
-    </tbody></table>`;
-};
+  const data = await api('/inventory?search=' + encodeURIComponent(search));
+  let filtered = filter ? data.filter(i => i.invStatus === filter) : data;
 
-function statusBadge(status) {
-  const map = { healthy: ['Healthy','badge-green'], low: ['Low','badge-yellow'], critical: ['Critical','badge-red'], outOfStock: ['Out of Stock','badge-gray'], overstocked: ['Overstocked','badge-blue'] };
-  const m = map[status] || [status, 'badge-gray'];
-  return `<span class="badge ${m[1]}">${m[0]}</span>`;
-}
-
-// --- MEDICINES ---
-pages.medicines = async () => {
-  const main = document.getElementById('main-content');
-  main.innerHTML = `<div class="search-bar"><input type="text" id="med-search" placeholder="Search medicines..." onkeyup="loadMedicines()">
-    <button class="btn btn-primary" onclick="showAddMedicine()">+ Add Medicine</button></div>
-    <div id="med-table"><div class="loading">Loading...</div></div>
-    <div id="med-detail"></div>`;
-  await loadMedicines();
-};
-
-window.loadMedicines = async () => {
-  const search = document.getElementById('med-search')?.value || '';
-  const el = document.getElementById('med-table');
-  if (!el) return;
-  el.innerHTML = '<div class="loading">Loading...</div>';
-  const data = await api(`/medicines?search=${encodeURIComponent(search)}`);
-  el.innerHTML = `<div style="font-size:0.85rem;color:var(--gray-500);margin-bottom:0.5rem">${data.length} medicines</div>
-    <table><thead><tr><th>Name</th><th>Category</th><th>Stock</th><th>Min</th><th>Reorder</th><th>Price</th><th>Barcode</th><th>Action</th></tr></thead><tbody>
-    ${data.map(m => `<tr>
-      <td><strong>${escapeHtml(m.name)}</strong></td>
-      <td>${escapeHtml(m.categoryName||'')}</td>
-      <td>${m.currentStock||0}</td>
-      <td>${m.minStock}</td>
-      <td>${m.reorderLevel}</td>
-      <td>₹${(m.purchasePrice||0).toLocaleString('en-IN')}</td>
-      <td>${m.barcode ? m.barcode : '-'}</td>
-      <td><button class="btn btn-sm btn-outline" onclick="loadMedicineDetails('${m.id}')">View</button>
-      <button class="btn btn-sm btn-outline" onclick="showAddBatch('${m.id}','${escapeHtml(m.name)}')">+Batch</button></td>
-    </tr>`).join('') || '<tr><td colspan="8" class="text-center" style="padding:2rem;color:var(--gray-400)">No medicines</td></tr>'}
-    </tbody></table>`;
-};
-
-window.loadMedicineDetails = async (id) => {
-  const el = document.getElementById('med-detail');
-  if (!el) return;
-  el.innerHTML = '<div class="loading">Loading...</div>';
-  const m = await api(`/medicines/${id}`);
-  if (!m || m.error) { el.innerHTML = ''; showToast('Error loading', 'error'); return; }
   el.innerHTML = `
-    <div class="card">
-      <div class="flex justify-between items-center mb-1">
-        <h3>${escapeHtml(m.name)}</h3>
-        <div>${m.isAyurvedic ? '<span class="badge badge-green">Ayurvedic</span>' : '<span class="badge badge-blue">General</span>'}</div>
-      </div>
-      <div class="grid-3" style="font-size:0.85rem">
-        <div><strong>Category:</strong> ${escapeHtml(m.categoryName||'-')}</div>
-        <div><strong>Form:</strong> ${escapeHtml(m.form||'-')}</div>
-        <div><strong>Unit:</strong> ${escapeHtml(m.unit||'-')}</div>
-        <div><strong>Min Stock:</strong> ${m.minStock}</div>
-        <div><strong>Max Stock:</strong> ${m.maxStock}</div>
-        <div><strong>Reorder Level:</strong> ${m.reorderLevel}</div>
-        <div><strong>Purchase Price:</strong> ₹${( m.purchasePrice||0).toLocaleString('en-IN')}</div>
-        <div><strong>Current Stock:</strong> ${m.inventory?.totalQuantity||0}</div>
-        ${m.botanicalName ? `<div><strong>Botanical:</strong> ${escapeHtml(m.botanicalName)}</div>` : ''}
-        ${m.ayurvedicForm ? `<div><strong>Ayurvedic Form:</strong> ${escapeHtml(m.ayurvedicForm)}</div>` : ''}
-      </diiv>
+    <div style="font-size:0.85rem;color:var(--gray-500);margin-bottom:0.5rem">Showing ${filtered.length} of ${data.length} items</div>
+    <table><thead><tr><th>Medicine</th><th>Category</th><th>Stock</th><th>Min/Max</th><th>Status</th><th>Value</th></tr></thead><tbody>
+    ${filtered.map(i => `
+      <tr class="status-${i.invStatus}">
+        <td><strong>${escapeHtml(i.medicineName)}</strong></td>
+        <td>${escapeHtml(i.categoryName || '-')}</td>
+        <td><strong>${i.totalQuantity || 0}</strong> ${escapeHtml(i.unit || '')}</td>
+        <td>${i.minStock} / ${i.maxStock}</td>
+        <td>${statusBadge(i.invStatus)}</td>
+        <td>${formatCurrency((i.totalQuantity || 0) * (i.purchasePrice || 0))}</td>
+      </tr>`).join('') || '<tr><td colspan="6" class="text-center" style="padding:2rem;color:var(--gray-400)">No items found</td></tr>'}
+    </tbody></table>`;
+};
+
+// ============ PAGE: MEDICINES ============
+async function loadMedicines() {
+  const main = document.getElementById('main-content');
+  if (!main) return;
+  main.innerHTML = `
+    <div class="search-bar">
+      <input type="text" id="med-search" placeholder="🔍 Search medicines..." onkeyup="window.filterMedicines()">
+      <button class="btn btn-primary" onclick="window.showAddMedicine()">➕ Add Medicine</button>
     </div>
-    <div class="card">
-      <h4 class="mb-1">Batches (${m.batches?.length||0})</h4>
-      <table><thead><tr><th>Batch#</th><th>Qty</th><th>Mfg</th><th>Expiry</th><th>Status</th><th>Action</th></tr></thead><tbody>
-        ${(m.batches||[]).map(b => `<tr>
-          <td>${escapeHtml(b.batchNumber)}</td>
-          <td>${b.quantity}</td>
-          <td>${b.manufacturingDate ? b.manufacturingDate.split('T')[0] : '-'}</td>
-          <td style="color:${b.expiryDate && new Date(b.expiryDate) < new Date() ? 'var(--danger)' : new Date(b.expiryDate) < new Date(Date.now()+30*86400000) ? 'var(--warning)' : 'inherit'}">
-            ${b.expiryDate ? b.expiryDate.split('T')[0] : '-'}
-            ${b.expiryDate && new Date(b.expiryDate) < new Date() ? ' (EXPIRED)' : ''}
-          </td>
-          <td>${statusBadge(b.quantity <= 0 ? 'outOfStock' : b.status||'active')}</td>
-          <td><button class="btn btn-sm btn-danger" onclick="showWastage('${b.id}','${escapeHtml(m.name)}','${escapeHtml(b.batchNumber)}',${b.quantity})">Wastage</button></td>
-        </tr>`).join('') || '<tr><td colspan="6" class="text-center">No batches</td></tr>'}
-      </tbody></table>
-    </div>`;
-};
-
-// --- STOCK IN ---
-pages['stock-in'] = () => {
-  document.getElementById('main-content').innerHTML = `
-    <div class="card" style="max-width:600px">
-      <h3 class="mb-2">📥 Stock In</h3>
-      <div class="form-group"><label>Medicine *</label>
-        <select id="si-medicine" class="w-full"><option value="">Select medicine...</option></select></div>
-      <div class="form-group"><label>Batch Number *</label><input type="text" id="si-batch" class="w-full"></div>
-      <div class="form-group"><label>Quantity *</label><input type="number" id="si-qty" class="w-full" min="1"></div>
-      <div class="form-group"><label>Purchase Price</label><input type="number" id="si-price" class="w-full" min="0" step="0.01"></div>
-      <div class="form-group"><label>Manufacturing Date</label><input type="date" id="si-mfg" class="w-full"></div>
-      <div class="form-group"><label>Expiry Date *</label><input type="date" id="si-exp" class="w-full"></div>
-      <div class="form-group"><label>Supplier</label>
-        <select id="si-supplier" class="w-full"><option value="">Select...</option></select></div>
-      <div class="form-group"><label>Notes</label><textarea id="si-notes" class="w-full" rows="2"></textarea></div>
-      <button class="btn btn-primary w-full" onclick="handleStockIn()">Record Stock In</button>
-    </div>`;
-  loadSelectOptions();
-};
-
-async function loadSelectOptions() {
-  const meds = await api('/medicines');
-  const medSel = document.getElementById('si-medicine');
-  if (medSel) medSel.innerHTML = '<option value="">Select medicine...</option>' + meds.map(m => `<option value="${m.id}">${escapeHtml(m.name)} (Stock: ${m.currentStock||0})</option>`).join('');
-  const sups = await api('/suppliers');
-  const supSel = document.getElementById('si-supplier');
-  if (supSel) supSel.innerHTML = '<option value="">Select...</option>' + sups.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+    <div id="med-content"><div class="loading">Loading medicines...</div></div>`;
+  await filterMedicines();
 }
 
-window.handleStockIn = async () => {
+window.filterMedicines = async function() {
+  const el = document.getElementById('med-content');
+  if (!el) return;
+  const search = (document.getElementById('med-search')?.value) || '';
+  const data = await api('/medicines?search=' + encodeURIComponent(search));
+  el.innerHTML = `
+    <div style="font-size:0.85rem;color:var(--gray-500);margin-bottom:0.5rem">${data.length} medicines</div>
+    <table><thead><tr><th>Name</th><th>Category</th><th>Stock</th><th>Min/Order</th><th>Price</th><th>Status</th></tr></thead><tbody>
+    ${data.map(m => {
+      const stock = m.currentStock || 0;
+      let st = 'badge-green';
+      let stLabel = 'Healthy';
+      if (stock <= 0) { st = 'badge-gray'; stLabel = 'Out'; }
+      else if (stock <= (m.minStock || 0)) { st = 'badge-red'; stLabel = 'Critical'; }
+      else if (stock <= (m.reorderLevel || 0)) { st = 'badge-yellow'; stLabel = 'Low'; }
+      return `<tr>
+        <td><strong>${escapeHtml(m.name)}</strong>${m.isAyurvedic ? ' <span class="badge badge-green" style="font-size:0.65rem">Ay</span>' : ''}</td>
+        <td>${escapeHtml(m.categoryName || '-')}</td>
+        <td><strong>${stock}</strong></td>
+        <td>${m.minStock} / ${m.reorderLevel}</td>
+        <td>${formatCurrency(m.purchasePrice)}</td>
+        <td><span class="badge ${st}">${stLabel}</span></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="6" class="text-center" style="padding:2rem;color:var(--gray-400)">No medicines</td></tr>'}
+    </tbody></table>`;
+};
+
+window.showAddMedicine = async function() {
+  const cats = await api('/categories');
+  showModal('Add New Medicine', `
+    <div class="form-group"><label>Name *</label><input type="text" id="m-name" placeholder="Medicine name"></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Category</label><select id="m-cat"><option value="">Select...</option>${(cats || []).map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Form</label><input type="text" id="m-form" placeholder="Powder, Tablet, etc."></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Unit</label><input type="text" id="m-unit" value="pieces"></div>
+      <div class="form-group"><label>Manufacturer</label><input type="text" id="m-mfg"></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Min Stock</label><input type="number" id="m-min" value="5" min="0"></div>
+      <div class="form-group"><label>Reorder Level</label><input type="number" id="m-reorder" value="10" min="0"></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Purchase Price</label><input type="number" id="m-price" value="0" min="0" step="0.01"></div>
+      <div class="form-group"><label>Selling Price</label><input type="number" id="m-sprice" value="0" min="0" step="0.01"></div>
+    </div>
+    <div class="form-group"><label>Description</label><textarea id="m-desc" rows="2" placeholder="Optional description"></textarea></div>
+    <button class="btn btn-primary w-full" onclick="window.saveMedicine()">💾 Save Medicine</button>
+  `);
+};
+
+window.saveMedicine = async function() {
+  const body = {
+    name: document.getElementById('m-name').value,
+    categoryId: document.getElementById('m-cat').value || null,
+    form: document.getElementById('m-form').value || null,
+    unit: document.getElementById('m-unit').value || 'pieces',
+    manufacturer: document.getElementById('m-mfg').value || null,
+    minStock: parseInt(document.getElementById('m-min').value) || 5,
+    reorderLevel: parseInt(document.getElementById('m-reorder').value) || 10,
+    purchasePrice: parseFloat(document.getElementById('m-price').value) || 0,
+    sellingPrice: parseFloat(document.getElementById('m-sprice').value) || 0,
+    description: document.getElementById('m-desc').value || null
+  };
+  if (!body.name) { showToast('Name required', 'error'); return; }
+  const res = await api('/medicines', { method: 'POST', body: JSON.stringify(body) });
+  if (res.id) { showToast('✅ Medicine added!'); closeModal(); window.navigate('medicines'); }
+  else showToast(res.error || 'Error', 'error');
+};
+
+// ============ PAGE: STOCK IN ============
+function renderStockIn() {
+  const main = document.getElementById('main-content');
+  if (!main) return;
+  main.innerHTML = `
+    <div class="card" style="max-width:700px">
+      <h3 style="margin-bottom:1rem">📥 Record New Stock In</h3>
+      <div class="form-group"><label>Medicine *</label><select id="si-medicine"><option value="">Loading...</option></select></div>
+      <div class="grid-2">
+        <div class="form-group"><label>Batch Number *</label><input type="text" id="si-batch" placeholder="e.g. BATCH-001"></div>
+        <div class="form-group"><label>Quantity *</label><input type="number" id="si-qty" min="1"></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Purchase Price (per unit)</label><input type="number" id="si-price" min="0" step="0.01"></div>
+        <div class="form-group"><label>Manufacturing Date</label><input type="date" id="si-mfg"></div>
+      </div>
+      <div class="form-group"><label>Expiry Date *</label><input type="date" id="si-exp"></div>
+      <div class="form-group"><label>Supplier</label><select id="si-supplier"><option value="">Loading...</option></select></div>
+      <div class="form-group"><label>Notes</label><textarea id="si-notes" rows="2"></textarea></div>
+      <button class="btn btn-primary w-full" onclick="window.handleStockIn()">✅ Record Stock In</button>
+    </div>`;
+  loadStockInDropdowns();
+}
+
+async function loadStockInDropdowns() {
+  try {
+    const [meds, sups] = await Promise.all([api('/medicines'), api('/suppliers')]);
+
+    const medSel = document.getElementById('si-medicine');
+    if (medSel) medSel.innerHTML = '<option value="">Select medicine...</option>' +
+      (meds || []).map(m => `<option value="${m.id}">${escapeHtml(m.name)} (Stock: ${m.currentStock || 0})</option>`).join('');
+
+    const supSel = document.getElementById('si-supplier');
+    if (supSel) supSel.innerHTML = '<option value="">No specific supplier</option>' +
+      (sups || []).map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+  } catch (err) { console.error('Dropdown load error:', err); }
+}
+
+window.handleStockIn = async function() {
   const body = {
     medicineId: document.getElementById('si-medicine').value,
     batchNumber: document.getElementById('si-batch').value,
@@ -388,40 +648,52 @@ window.handleStockIn = async () => {
     supplierId: document.getElementById('si-supplier').value || null,
     notes: document.getElementById('si-notes').value || null
   };
-  if (!body.medicineId || !body.batchNumber || !body.quantity) { showToast('Fill required fields', 'error'); return; }
+  if (!body.medicineId || !body.batchNumber || !body.quantity || body.quantity <= 0) {
+    showToast('Please fill required fields', 'error');
+    return;
+  }
   const res = await api('/stock-in', { method: 'POST', body: JSON.stringify(body) });
-  if (res.message) { showToast('Stock-in recorded!'); navigate('stock-in'); }
+  if (res.message || res.id) { showToast('✅ Stock-in recorded!'); window.navigate('stock-in'); }
   else showToast(res.error || 'Error', 'error');
 };
 
-// --- STOCK OUT ---
-pages['stock-out'] = () => {
-  document.getElementById('main-content').innerHTML = `
-    <div class="card" style="max-width:600px">
-      <h3 class="mb-2">📤 Stock Out (FEFO)</h3>
-      <div class="form-group"><label>Medicine *</label>
-        <select id="so-medicine" class="w-full"><option value="">Select medicine...</option></select></div>
-      <div class="form-group"><label>Quantity *</label><input type="number" id="so-qty" class="w-full" min="1"></div>
-      <div class="form-group"><label>Department</label>
-        <select id="so-dept" class="w-full"><option value="">Select...</option></select></div>
-      <div class="form-group"><label>Purpose</label><input type="text" id="so-purpose" class="w-full" placeholder="e.g. OPD dispensing"></div>
-      <div class="form-group"><label>Notes</label><textarea id="so-notes" class="w-full" rows="2"></textarea></div>
-      <button class="btn btn-primary w-full" onclick="handleStockOut()">Issue Stock (FEFO)</button>
-      <div id="fefo-info" class="mt-2" style="font-size:0.85rem;color:var(--gray-500)"></div>
+// ============ PAGE: STOCK OUT (FEFO) ============
+function renderStockOut() {
+  const main = document.getElementById('main-content');
+  if (!main) return;
+  main.innerHTML = `
+    <div class="card" style="max-width:700px">
+      <h3 style="margin-bottom:1rem">📤 Issue Stock (FEFO - First Expiry First Out)</h3>
+      <div class="alert-banner alert-info" style="font-size:0.8rem">
+        💡 <strong>FEFO:</strong> System automatically issues from the batch expiring earliest. You can override this with approval.
+      </div>
+      <div class="form-group"><label>Medicine *</label><select id="so-medicine"><option value="">Loading...</option></select></div>
+      <div class="grid-2">
+        <div class="form-group"><label>Quantity *</label><input type="number" id="so-qty" min="1"></div>
+        <div class="form-group"><label>Department</label><select id="so-dept"><option value="">Loading...</option></select></div>
+      </div>
+      <div class="form-group"><label>Purpose</label><input type="text" id="so-purpose" placeholder="e.g. OPD dispensing"></div>
+      <div class="form-group"><label>Notes</label><textarea id="so-notes" rows="2"></textarea></div>
+      <button class="btn btn-primary w-full" onclick="window.handleStockOut()">✅ Issue Stock (FEFO Auto)</button>
+      <div id="fefo-result" class="mt-2"></div>
     </div>`;
-  loadStockOutOptions();
-};
-
-async function loadStockOutOptions() {
-  const meds = await api('/medicines');
-  const sel = document.getElementById('so-medicine');
-  if (sel) sel.innerHTML = '<option value="">Select...</option>' + meds.map(m => `<option value="${m.id}">${escapeHtml(m.name)} (Stock: ${m.currentStock||0})</option>`).join('');
-  const depts = await api('/departments');
-  const dsel = document.getElementById('so-dept');
-  if (dsel) dsel.innerHTML = '<option value="">Select...</option>' + depts.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
+  loadStockOutDropdowns();
 }
 
-window.handleStockOut = async () => {
+async function loadStockOutDropdowns() {
+  try {
+    const [meds, depts] = await Promise.all([api('/medicines'), api('/departments')]);
+    const sel = document.getElementById('so-medicine');
+    if (sel) sel.innerHTML = '<option value="">Select medicine...</option>' +
+      (meds || []).map(m => `<option value="${m.id}">${escapeHtml(m.name)} (Stock: ${m.currentStock || 0})</option>`).join('');
+
+    const dsel = document.getElementById('so-dept');
+    if (dsel) dsel.innerHTML = '<option value="">Select department...</option>' +
+      (depts || []).map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
+  } catch (err) { console.error('Dropdown error:', err); }
+}
+
+window.handleStockOut = async function() {
   const body = {
     medicineId: document.getElementById('so-medicine').value,
     quantity: parseInt(document.getElementById('so-qty').value),
@@ -429,415 +701,509 @@ window.handleStockOut = async () => {
     purpose: document.getElementById('so-purpose').value || null,
     notes: document.getElementById('so-notes').value || null
   };
-  if (!body.medicineId || !body.quantity) { showToast('Fill required', 'error'); return; }
+  if (!body.medicineId || !body.quantity || body.quantity <= 0) {
+    showToast('Please fill required fields', 'error');
+    return;
+  }
   const res = await api('/stock-out', { method: 'POST', body: JSON.stringify(body) });
-  if (res.message) { showToast('Stock-out completed! FEFO applied'); navigate('stock-out'); }
-  else showToast(res.error || 'Error', 'error');
-  const fi = document.getElementById('fefo-info');
-  if (res.transactions) fi.innerHTML = '✅ FEFO: ' + res.transactions.map(t => `Batch ${escapeHtml(t.batchNumber)}: ${t.quantity}`).join(', ');
+  if (res.message) {
+    showToast('✅ Stock issued! FEFO applied');
+    const fefoDiv = document.getElementById('fefo-result');
+    if (fefoDiv && res.transactions) {
+      fefoDiv.innerHTML = '<div class="alert-banner alert-info" style="font-size:0.85rem"><strong>FEFO Allocation:</strong><br>' +
+        res.transactions.map(t => `✅ Batch <code>${escapeHtml(t.batchNumber)}</code>: ${t.quantity} units`).join('<br>') +
+        '</div>';
+    }
+    setTimeout(() => window.navigate('stock-out'), 1500);
+  } else {
+    showToast(res.error || 'Error', 'error');
+  }
 };
 
-// --- EXPIRY ---
-pages.expiry = async () => {
+// ============ PAGE: EXPIRY ============
+async function loadExpiry() {
   const main = document.getElementById('main-content');
-  main.innerHTML = '<div class="loading">Loading...</div>';
+  if (!main) return;
+  main.innerHTML = '<div class="loading">Loading expiry data...</div>';
   const data = await api('/inventory/expiring?days=365');
   main.innerHTML = `
-    <div class="flex justify-between items-center mb-2">
+    <div class="flex justify-between items-center mb-2" style="flex-wrap:wrap;gap:0.5rem">
       <h3>⏰ Expiry Management</h3>
-      <select id="exp-days" onchange="navigate('expiry')" style="padding:0.5rem;border:1px solid var(--gray-300);border-radius:8px">
-        <option value="30">30 days</option><option value="60">60 days</option><option value="90">90 days</option><option value="365">All</option>
-      </select>
+      <div style="font-size:0.85rem;color:var(--gray-500)">${(data || []).length} batches tracked</div>
     </div>
     <div class="card">
-      <table><thead><tr><th>Medicine</th><th>Batch#</th><th>Qty</th><th>Expiry</th><th>Days Left</th><th>Value</th><th>Action</th></tr></thead><tbody>
-        ${data.map(b => {
+      <table><thead><tr><th>Medicine</th><th>Batch#</th><th>Qty</th><th>Expiry Date</th><th>Days Left</th><th>Value</th></tr></thead><tbody>
+        ${(data || []).map(b => {
           const daysLeft = b.expiryDate ? Math.ceil((new Date(b.expiryDate) - new Date()) / 86400000) : 999;
           const isExpired = daysLeft < 0;
-          return `<tr style="background:${isExpired?'#fee2e2':daysLeft<30?'#fef3c7':''}">
+          const isCritical = daysLeft >= 0 && daysLeft < 30;
+          let badge;
+          if (isExpired) badge = '<span class="badge badge-red">EXPIRED</span>';
+          else if (daysLeft < 7) badge = '<span class="badge badge-red">' + daysLeft + 'd</span>';
+          else if (daysLeft < 30) badge = '<span class="badge badge-yellow">' + daysLeft + 'd</span>';
+          else badge = daysLeft + 'd';
+          const rowStyle = isExpired ? 'background:#fee2e2' : (isCritical ? 'background:#fef3c7' : '');
+          return `<tr style="${rowStyle}">
             <td><strong>${escapeHtml(b.medicineName)}</strong></td>
             <td>${escapeHtml(b.batchNumber)}</td>
-            <td>${b.quantity} ${escapeHtml(b.unit||'')}</td>
-            <td>${b.expiryDate ? b.expiryDate.split('T')[0] : '-'}</td>
-            <td>${isExpired ? '<span class="badge badge-red">EXPIRED</span>' : daysLeft < 7 ? `<span class="badge badge-red">${daysLeft}d</span>` : daysLeft < 30 ? `<span class="badge badge-yellow">${daysLeft}d</span>` : daysLeft + 'd'}</td>
-            <td>₹${((b.quantity||0)*(b.purchasePrice||0)).toLocaleString('en-IN')}</td>
-            <td>${isExpired ? `<button class="btn btn-sm btn-danger" onclick="showWastage('${b.id}','${escapeHtml(b.medicineName)}','${escapeHtml(b.batchNumber)}',${b.quantity})">Wastage</button>` : 
-              `<button class="btn btn-sm btn-warning" onclick="showWastage('${b.id}','${escapeHtml(b.medicineName)}','${escapeHtml(b.batchNumber)}',${b.quantity})">Mark</button>`}</td>
+            <td>${b.quantity} ${escapeHtml(b.unit || '')}</td>
+            <td>${formatDate(b.expiryDate)}</td>
+            <td>${badge}</td>
+            <td>${formatCurrency((b.quantity || 0) * (b.purchasePrice || 0))}</td>
           </tr>`;
-        }).join('') || '<tr><td colspan="7" class="text-center" style="padding:2rem">No data</td></tr>'}
+        }).join('') || '<tr><td colspan="6" class="text-center" style="padding:2rem">No expiry data</td></tr>'}
       </tbody></table>
     </div>`;
-};
+}
 
-// --- SUPPLIERS ---
-pages.suppliers = async () => {
+// ============ PAGE: SUPPLIERS ============
+async function loadSuppliers() {
   const main = document.getElementById('main-content');
-  main.innerHTML = `<div class="search-bar"><input type="text" id="sup-search" placeholder="Search suppliers..." onkeyup="loadSuppliers()">
-    <button class="btn btn-primary" onclick="showAddSupplier()">+ Add Supplier</button></div>
-    <div id="sup-table"><div class="loading">Loading...</div></div>`;
-  await loadSuppliers();
-};
-
-window.loadSuppliers = async () => {
-  const search = document.getElementById('sup-search')?.value || '';
-  const el = document.getElementById('sup-table'); if (!el) return;
-  const data = await api(`/suppliers?search=${encodeURIComponent(search)}`);
-  el.innerHTML = `<table><thead><tr><th>Name</th><th>Contact</th><th>Email</th><th>Phone</th><th>Lead Time</th><th>Items</th><th>POs</th><th>Action</th></tr></thead><tbody>
-    ${data.map(s => `<tr><td><strong>${escapeHtml(s.name)}</strong></td><td>${escapeHtml(s.contactPerson||'-')}</td><td>${escapeHtml(s.email||'-')}</td><td>${escapeHtml(s.phone||'-')}</td>
-      <td>${s.leadTime}d</td><td>${s.medicineCount||0}</td><td>${s.poCount||0}</td>
-      <td><button class="btn btn-sm btn-outline" onclick="showSupplierDetail('${s.id}')">View</button></td></tr>`).join('') || '<tr><td colspan="8" class="text-center">No suppliers</td></tr>'}
-  </tbody></table>`;
-};
-
-// --- PURCHASE ORDERS ---
-pages['purchase-orders'] = async () => {
-  const main = document.getElementById('main-content');
-  main.innerHTML = `<div class="flex justify-between items-center mb-2">
-    <h3>📋 Purchase Orders</h3>
-    <button class="btn btn-primary" onclick="showCreatePO()">+ New PO</button></div>
-    <div id="po-table"><div class="loading">Loading...</div></div>
-    <div id="po-detail"></div>`;
-  const data = await api('/purchase-orders');
-  const el = document.getElementById('po-table'); if (!el) return;
-  el.innerHTML = `<table><thead><tr><th>PO#</th><th>Supplier</th><th>Total</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody>
-    ${data.map(po => `<tr>
-      <td><strong>${escapeHtml(po.poNumber)}</strong></td>
-      <td>${escapeHtml(po.supplierName||'-')}</td>
-      <td>₹${(po.totalAmount||0).toLocaleString('en-IN')}</td>
-      <td>${statusBadge(po.status)}</td>
-      <td>${po.createdAt ? po.createdAt.split('T')[0] : '-'}</td>
-      <td>
-        <button class="btn btn-sm btn-outline" onclick="loadPODetail('${po.id}')">View</button>
-        ${po.status === 'draft' ? `<button class="btn btn-sm btn-primary" onclick="approvePO('${po.id}')">Approve</button>` : ''}
-        ${po.status === 'approved' ? `<button class="btn btn-sm btn-info" onclick="showReceivePO('${po.id}')">Receive</button>` : ''}
-      </td></tr>`).join('') || '<tr><td colspan="6" class="text-center">No POs</td></tr>'}
-  </tbody></table>`;
-};
-
-window.loadPODetail = async (id) => {
-  const el = document.getElementById('po-detail'); if (!el) return;
-  const po = await api(`/purchase-orders/${id}`);
-  el.innerHTML = `<div class="card"><h4>PO ${escapeHtml(po.poNumber)} - ${escapeHtml(po.supplierName||'')}</h4>
-    <table><thead><tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th><th>Received</th></tr></thead><tbody>
-      ${(po.items||[]).map(i => `<tr><td>${escapeHtml(i.medicineName||'Item')}</td><td>${i.quantity}</td><td>₹${(i.unitPrice||0).toLocaleString('en-IN')}</td><td>₹${(i.totalPrice||0).toLocaleString('en-IN')}</td><td>${i.receivedQuantity||0}</td></tr>`).join('')}
-    </tbody></table>
-    <div style="font-size:0.85rem;color:var(--gray-500);margin-top:0.5rem">Status: ${po.status} | Total: ₹${(po.totalAmount||0).toLocaleString('en-IN')}</div></div>`;
-};
-
-// --- TRANSFERS ---
-pages.transfers = async () => {
-  const main = document.getElementById('main-content');
-  main.innerHTML = `<div class="flex justify-between items-center mb-2">
-    <h3>🔄 Stock Transfers</h3>
-    <button class="btn btn-primary" onclick="showTransferForm()">+ New Transfer</button></div>
-    <div id="transfer-table"><div class="loading">Loading...</div></div>`;
-  const data = await api('/transfers');
-  const el = document.getElementById('transfer-table'); if (!el) return;
-  el.innerHTML = `<table><thead><tr><th>Medicine</th><th>Batch</th><th>Qty</th><th>From</th><th>To</th><th>Status</th><th>Date</th></tr></thead><tbody>
-    ${data.map(t => `<tr><td>${escapeHtml(t.medicineName||'')}</td><td>${escapeHtml(t.batchNumber||'')}</td><td>${t.quantity}</td>
-      <td>${escapeHtml(t.fromDept||'')}</td><td>${escapeHtml(t.toDept||'')}</td><td>${statusBadge(t.status)}</td>
-      <td>${t.createdAt ? t.createdAt.split('T')[0] : '-'}</td></tr>`).join('') || '<tr><td colspan="7" class="text-center">No transfers</td></tr>'}
-  </tbody></table>`;
-};
-
-// --- AI ADVISOR ---
-pages['ai-advisor'] = async () => {
-  const main = document.getElementById('main-content');
+  if (!main) return;
+  const data = await api('/suppliers');
   main.innerHTML = `
-    <div class="card" style="max-width:800px">
-      <h3 class="mb-1">🤖 MediTrack AI Purchase Advisor</h3>
-      <p style="color:var(--gray-500);font-size:0.85rem;margin-bottom:1rem">AI-driven recommendations for inventory purchasing decisions</p>
+    <div class="search-bar">
+      <input type="text" id="sup-search" placeholder="🔍 Search suppliers..." onkeyup="window.filterSuppliers()">
+      <button class="btn btn-primary" onclick="window.showAddSupplier()">➕ Add Supplier</button>
+    </div>
+    <div id="sup-content">
+      <table><thead><tr><th>Name</th><th>Contact</th><th>Phone</th><th>City</th><th>Lead Time</th><th>Items</th><th>POs</th></tr></thead><tbody>
+      ${(data || []).map(s => `<tr>
+        <td><strong>${escapeHtml(s.name)}</strong></td>
+        <td>${escapeHtml(s.contactPerson || '-')}</td>
+        <td>${escapeHtml(s.phone || '-')}</td>
+        <td>${escapeHtml(s.city || '-')}</td>
+        <td>${s.leadTime}d</td>
+        <td>${s.medicineCount || 0}</td>
+        <td>${s.poCount || 0}</td>
+      </tr>`).join('') || '<tr><td colspan="7" class="text-center" style="padding:2rem">No suppliers</td></tr>'}
+      </tbody></table>
+    </div>`;
+}
+
+window.filterSuppliers = async function() {
+  const search = (document.getElementById('sup-search')?.value) || '';
+  const data = await api('/suppliers?search=' + encodeURIComponent(search));
+  const el = document.getElementById('sup-content');
+  if (el) el.innerHTML = `
+    <table><thead><tr><th>Name</th><th>Contact</th><th>Phone</th><th>City</th><th>Lead Time</th><th>Items</th><th>POs</th></tr></thead><tbody>
+    ${(data || []).map(s => `<tr>
+      <td><strong>${escapeHtml(s.name)}</strong></td>
+      <td>${escapeHtml(s.contactPerson || '-')}</td>
+      <td>${escapeHtml(s.phone || '-')}</td>
+      <td>${escapeHtml(s.city || '-')}</td>
+      <td>${s.leadTime}d</td>
+      <td>${s.medicineCount || 0}</td>
+      <td>${s.poCount || 0}</td>
+    </tr>`).join('') || '<tr><td colspan="7" class="text-center" style="padding:2rem">No suppliers</td></tr>'}
+    </tbody></table>`;
+};
+
+window.showAddSupplier = function() {
+  showModal('Add New Supplier', `
+    <div class="form-group"><label>Name *</label><input type="text" id="s-name"></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Contact Person</label><input type="text" id="s-contact"></div>
+      <div class="form-group"><label>Phone</label><input type="text" id="s-phone"></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Email</label><input type="email" id="s-email"></div>
+      <div class="form-group"><label>City</label><input type="text" id="s-city"></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Lead Time (days)</label><input type="number" id="s-lead" value="7" min="1"></div>
+      <div class="form-group"><label>Payment Terms</label><input type="text" id="s-payment"></div>
+    </div>
+    <div class="form-group"><label>Address</label><textarea id="s-addr" rows="2"></textarea></div>
+    <button class="btn btn-primary w-full" onclick="window.saveSupplier()">💾 Save Supplier</button>
+  `);
+};
+
+window.saveSupplier = async function() {
+  const name = document.getElementById('s-name').value;
+  if (!name) { showToast('Name required', 'error'); return; }
+  const body = {
+    name,
+    contactPerson: document.getElementById('s-contact').value || null,
+    phone: document.getElementById('s-phone').value || null,
+    email: document.getElementById('s-email').value || null,
+    city: document.getElementById('s-city').value || null,
+    leadTime: parseInt(document.getElementById('s-lead').value) || 7,
+    paymentTerms: document.getElementById('s-payment').value || null,
+    address: document.getElementById('s-addr').value || null
+  };
+  const res = await api('/suppliers', { method: 'POST', body: JSON.stringify(body) });
+  if (res.id) { showToast('✅ Supplier added!'); closeModal(); window.navigate('suppliers'); }
+  else showToast(res.error || 'Error', 'error');
+};
+
+// ============ PAGE: PURCHASE ORDERS ============
+async function loadPurchaseOrders() {
+  const main = document.getElementById('main-content');
+  if (!main) return;
+  const data = await api('/purchase-orders');
+  main.innerHTML = `
+    <div class="flex justify-between items-center mb-2" style="flex-wrap:wrap;gap:0.5rem">
+      <h3>📋 Purchase Orders</h3>
+      <button class="btn btn-primary" onclick="window.showCreatePO()">➕ New PO</button>
+    </div>
+    <div class="card">
+      <table><thead><tr><th>PO Number</th><th>Supplier</th><th>Total</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody>
+      ${(data || []).map(po => `<tr>
+        <td><strong>${escapeHtml(po.poNumber)}</strong></td>
+        <td>${escapeHtml(po.supplierName || '-')}</td>
+        <td>${formatCurrency(po.totalAmount)}</td>
+        <td>${statusBadge(po.status)}</td>
+        <td>${formatDate(po.createdAt)}</td>
+        <td>
+          ${po.status === 'draft' ? `<button class="btn btn-sm btn-primary" onclick="window.approvePO('${po.id}')">Approve</button>` : ''}
+          ${po.status === 'approved' ? `<button class="btn btn-sm btn-info" onclick="window.receivePO('${po.id}')">Receive</button>` : ''}
+        </td>
+      </tr>`).join('') || '<tr><td colspan="6" class="text-center" style="padding:2rem">No purchase orders yet</td></tr>'}
+      </tbody></table>
+    </div>`;
+}
+
+window.approvePO = async function(id) {
+  const res = await api('/purchase-orders/' + id + '/status', { method: 'PATCH', body: JSON.stringify({ status: 'approved' }) });
+  if (res.message) { showToast('✅ PO approved!'); window.navigate('purchase-orders'); }
+  else showToast(res.error || 'Error', 'error');
+};
+
+window.receivePO = async function(id) {
+  const po = await api('/purchase-orders/' + id);
+  if (!po || !po.items) return;
+  const items = po.items.map(i => ({ id: i.id, receivedQuantity: i.quantity - (i.receivedQuantity || 0) }));
+  const res = await api('/purchase-orders/' + id + '/receive', { method: 'POST', body: JSON.stringify({ items }) });
+  if (res.message) { showToast('✅ PO items received! Inventory updated'); window.navigate('purchase-orders'); }
+  else showToast(res.error || 'Error', 'error');
+};
+
+window.showCreatePO = async function() {
+  const [sups, meds] = await Promise.all([api('/suppliers'), api('/medicines')]);
+  showModal('Create Purchase Order', `
+    <div class="form-group"><label>Supplier *</label>
+      <select id="po-supplier"><option value="">Select supplier...</option>${(sups || []).map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('')}</select>
+    </div>
+    <div class="form-group"><label>Expected Delivery</label><input type="date" id="po-delivery"></div>
+    <h4 style="margin-top:1rem;margin-bottom:0.5rem">Items</h4>
+    <div id="po-items">
+      <div class="grid-2 mb-1" style="gap:0.5rem;align-items:center">
+        <select class="po-med"><option value="">Select medicine...</option>${(meds || []).map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('')}</select>
+        <div class="grid-2" style="gap:0.5rem">
+          <input type="number" class="po-qty" placeholder="Qty" min="1" style="padding:0.5rem;border:1px solid var(--gray-300);border-radius:8px">
+          <input type="number" class="po-price" placeholder="Price" min="0" step="0.01" style="padding:0.5rem;border:1px solid var(--gray-300);border-radius:8px">
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-sm btn-outline" onclick="window.addPOItem()" style="margin-bottom:1rem">➕ Add Another Item</button>
+    <button class="btn btn-primary w-full" onclick="window.savePO()">📋 Create Purchase Order</button>
+  `, '650px');
+};
+
+window.addPOItem = async function() {
+  const meds = await api('/medicines');
+  const container = document.getElementById('po-items');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'grid-2 mb-1';
+  div.style.cssText = 'gap:0.5rem;align-items:center';
+  div.innerHTML = `
+    <select class="po-med"><option value="">Select medicine...</option>${(meds || []).map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('')}</select>
+    <div class="grid-2" style="gap:0.5rem">
+      <input type="number" class="po-qty" placeholder="Qty" style="padding:0.5rem;border:1px solid var(--gray-300);border-radius:8px">
+      <input type="number" class="po-price" placeholder="Price" style="padding:0.5rem;border:1px solid var(--gray-300);border-radius:8px">
+    </div>`;
+  container.appendChild(div);
+};
+
+window.savePO = async function() {
+  const supplierId = document.getElementById('po-supplier').value;
+  const items = [];
+  document.querySelectorAll('.po-med').forEach((sel, i) => {
+    const medId = sel.value;
+    const qty = parseInt(document.querySelectorAll('.po-qty')[i].value);
+    const price = parseFloat(document.querySelectorAll('.po-price')[i].value) || 0;
+    if (medId && qty) items.push({ medicineId: medId, quantity: qty, unitPrice: price });
+  });
+  if (!supplierId || !items.length) { showToast('Supplier and items required', 'error'); return; }
+  const res = await api('/purchase-orders', {
+    method: 'POST',
+    body: JSON.stringify({
+      supplierId,
+      items,
+      expectedDelivery: document.getElementById('po-delivery').value || null
+    })
+  });
+  if (res.id) { showToast('✅ PO ' + res.poNumber + ' created!'); closeModal(); window.navigate('purchase-orders'); }
+  else showToast(res.error || 'Error', 'error');
+};
+
+// ============ PAGE: TRANSFERS ============
+async function loadTransfers() {
+  const main = document.getElementById('main-content');
+  if (!main) return;
+  const data = await api('/transfers');
+  main.innerHTML = `
+    <div class="flex justify-between items-center mb-2">
+      <h3>🔄 Stock Transfers (Redistribution)</h3>
+    </div>
+    <div class="card">
+      <table><thead><tr><th>Medicine</th><th>Batch</th><th>Qty</th><th>From</th><th>To</th><th>Status</th><th>Date</th></tr></thead><tbody>
+      ${(data || []).map(t => `<tr>
+        <td>${escapeHtml(t.medicineName || '-')}</td>
+        <td>${escapeHtml(t.batchNumber || '-')}</td>
+        <td>${t.quantity}</td>
+        <td>${escapeHtml(t.fromDept || '-')}</td>
+        <td>${escapeHtml(t.toDept || '-')}</td>
+        <td>${statusBadge(t.status)}</td>
+        <td>${formatDate(t.createdAt)}</td>
+      </tr>`).join('') || '<tr><td colspan="7" class="text-center" style="padding:2rem">No transfers yet</td></tr>'}
+      </tbody></table>
+    </div>`;
+}
+
+// ============ PAGE: AI ADVISOR ============
+async function loadAIAdvisor() {
+  const main = document.getElementById('main-content');
+  if (!main) return;
+  main.innerHTML = `
+    <div class="card mb-2">
+      <h3 style="margin-bottom:0.5rem">🤖 MediTrack AI Purchase Advisor</h3>
+      <p style="color:var(--gray-500);font-size:0.85rem;margin-bottom:1rem">AI-driven recommendations for purchasing decisions based on inventory analysis</p>
       <div id="ai-advisor-content"><div class="loading">Analyzing inventory...</div></div>
     </div>
-    <div class="card mt-2" style="max-width:800px">
-      <h4 class="mb-1">🧠 Emergency Readiness</h4>
+    <div class="card mb-2">
+      <h4 style="margin-bottom:0.5rem">🛡️ Emergency Readiness</h4>
       <div id="ai-emergency"><div class="loading">Calculating...</div></div>
     </div>
-    <div class="card mt-2" style="max-width:800px">
-      <div class="flex justify-between items-center mb-1">
-        <h4>💬 AI Assistant</h4>
+    <div class="card">
+      <h4 style="margin-bottom:0.5rem">💬 AI Assistant</h4>
+      <p style="color:var(--gray-500);font-size:0.85rem;margin-bottom:0.5rem">Ask natural language questions about inventory</p>
+      <div class="search-bar">
+        <input type="text" id="ai-query" placeholder="e.g. Which medicines are low?" onkeypress="if(event.key==='Enter') window.askAI()">
+        <button class="btn btn-primary" onclick="window.askAI()">🔍 Ask</button>
       </div>
-      <div class="search-bar"><input type="text" id="ai-query" placeholder="Ask about inventory..." onkeypress="if(event.key==='Enter')askAI()" style="min-width:300px">
-        <button class="btn btn-primary" onclick="askAI()">Ask</button></div>
-      <div id="ai-answer" style="font-size:0.85rem;margin-top:0.5rem;color:var(--gray-600)"></div>
-      <div id="ai-suggestions" class="flex gap-1 mt-1">
-        <button class="btn btn-sm btn-outline" onclick="quickAI('Which medicines expire within 30 days?')">Expiring in 30d</button>
-        <button class="btn btn-sm btn-outline" onclick="quickAI('Which items are critically low?')">Critical items</button>
-        <button class="btn btn-sm btn-outline" onclick="quickAI('What should we purchase this week?')">Purchase needs</button>
-        <button class="btn btn-sm btn-outline" onclick="quickAI('What is our inventory value?')">Inventory value</button>
+      <div id="ai-answer" style="font-size:0.9rem;margin-top:0.5rem"></div>
+      <div style="margin-top:0.75rem;display:flex;gap:0.5rem;flex-wrap:wrap">
+        <button class="btn btn-sm btn-outline" onclick="window.quickAI('Which medicines expire within 30 days?')">Expiring in 30d</button>
+        <button class="btn btn-sm btn-outline" onclick="window.quickAI('Which items are critically low?')">Critical items</button>
+        <button class="btn btn-sm btn-outline" onclick="window.quickAI('What should we purchase this week?')">Purchase needs</button>
+        <button class="btn btn-sm btn-outline" onclick="window.quickAI('What is our inventory value?')">Inventory value</button>
       </div>
     </div>`;
-  
+
   const recs = await api('/ai/purchase-advisor');
   const recEl = document.getElementById('ai-advisor-content');
   if (recEl) {
-    recEl.innerHTML = `<table><thead><tr><th>Medicine</th><th>Stock</th><th>Min</th><th>Recommendation</th><th>Suggested Qty</th><th>Risk</th></tr></thead><tbody>
-      ${recs.map(r => `<tr>
-        <td><strong>${escapeHtml(r.medicineName)}</strong></td>
-        <td>${r.currentStock}</td>
-        <td>${r.minStock}</td>
-        <td><span class="badge ${r.recommendation==='BUY NOW'?'badge-red':r.recommendation==='BUY SOON'?'badge-yellow':r.recommendation==='REDUCE PURCHASE'?'badge-blue':'badge-green'}">${r.recommendation}</span></td>
-        <td>${r.suggestedQty > 0 ? r.suggestedQty : '-'}</td>
-        <td>${statusBadge(r.risk)}</td></tr>
-        <tr><td colspan="6" style="font-size:0.8rem;color:var(--gray-500);padding-top:0">${escapeHtml(r.reason)}</td></tr>
-      `).join('')}</tbody></table>`;
+    recEl.innerHTML = `
+      <table><thead><tr><th>Medicine</th><th>Stock</th><th>Min</th><th>Recommendation</th><th>Qty</th><th>Risk</th><th>Reason</th></tr></thead><tbody>
+      ${(recs || []).map(r => {
+        const recColor = r.recommendation === 'BUY NOW' ? 'badge-red' : (r.recommendation === 'BUY SOON' ? 'badge-yellow' : (r.recommendation === 'REDUCE PURCHASE' ? 'badge-blue' : 'badge-green'));
+        return `<tr>
+          <td><strong>${escapeHtml(r.medicineName)}</strong></td>
+          <td>${r.currentStock}</td>
+          <td>${r.minStock}</td>
+          <td><span class="badge ${recColor}">${escapeHtml(r.recommendation)}</span></td>
+          <td>${r.suggestedQty > 0 ? r.suggestedQty : '-'}</td>
+          <td>${statusBadge(r.risk)}</td>
+          <td style="font-size:0.8rem;color:var(--gray-600)">${escapeHtml(r.reason)}</td>
+        </tr>`;
+      }).join('')}
+      </tbody></table>`;
   }
-  
+
   const emerg = await api('/ai/emergency-readiness');
   const emEl = document.getElementById('ai-emergency');
   if (emEl) {
-    emEl.innerHTML = `<div style="display:flex;align-items:center;gap:2rem;margin-bottom:1rem">
-      <div><div style="font-size:2.5rem;font-weight:700;color:${emerg.readinessScore>=80?'var(--primary)':emerg.readinessScore>=50?'var(--warning)':'var(--danger)'}">${emerg.readinessScore}%</div>
-      <div style="font-size:0.85rem;color:var(--gray-500)">Readiness Score</div></div>
-      <div><span class="badge ${emerg.readinessLevel==='SAFE'?'badge-green':emerg.readinessLevel==='WARNING'?'badge-yellow':'badge-red'}" style="font-size:1rem;padding:0.25rem 1rem">${emerg.readinessLevel}</span></div>
-    </div>
-    <div style="font-size:0.85rem">Items: ${emerg.totalItems} | Shortages: ${emerg.shortageItems} | Out of Stock: ${emerg.outOfStockItems}</div>
-    ${(emerg.criticalItems||[]).map(i => `<div style="font-size:0.85rem;color:var(--danger);margin-top:0.25rem">🚨 ${escapeHtml(i.medicineName)}: ${i.currentStock} units (need ${i.minRequired}) - ${i.status}</div>`).join('')}`;
+    const sc = emerg.readinessScore || 0;
+    const level = emerg.readinessLevel || 'SAFE';
+    emEl.innerHTML = `
+      <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:1rem;flex-wrap:wrap">
+        <div>
+          <div style="font-size:2.5rem;font-weight:700;color:${sc >= 80 ? 'var(--primary)' : sc >= 50 ? 'var(--warning)' : 'var(--danger)'}">${sc}%</div>
+          <div style="font-size:0.85rem;color:var(--gray-500)">Readiness Score</div>
+        </div>
+        <div><span class="badge ${level === 'SAFE' ? 'badge-green' : level === 'WARNING' ? 'badge-yellow' : 'badge-red'}" style="font-size:1rem;padding:0.5rem 1.25rem">${level}</span></div>
+        <div style="font-size:0.85rem">
+          Items: <strong>${emerg.totalItems}</strong> | Shortages: <strong>${emerg.shortageItems}</strong> | Out of Stock: <strong>${emerg.outOfStockItems}</strong>
+        </div>
+      </div>
+      ${(emerg.criticalItems || []).map(i => `
+        <div style="font-size:0.85rem;color:var(--danger);padding:0.25rem 0">
+          🚨 <strong>${escapeHtml(i.medicineName)}</strong>: ${i.currentStock} units (need ${i.minRequired}) - ${i.status}
+        </div>`).join('')}`;
   }
-};
+}
 
-window.askAI = async () => {
+window.askAI = async function() {
   const q = document.getElementById('ai-query')?.value;
   if (!q) return;
-  const res = await api('/ai/assistant', { method: 'POST', body: JSON.stringify({ query: q }) });
   const el = document.getElementById('ai-answer');
-  if (el) el.innerHTML = `<div style="background:var(--gray-100);padding:0.75rem;border-radius:8px">🤖 ${escapeHtml(res.answer)}</div>`;
+  if (el) el.innerHTML = '<div class="loading">Thinking...</div>';
+  const res = await api('/ai/assistant', { method: 'POST', body: JSON.stringify({ query: q }) });
+  if (el) el.innerHTML = `<div class="alert-banner alert-info">🤖 ${escapeHtml(res.answer || 'No response')}</div>`;
 };
 
-window.quickAI = (q) => {
+window.quickAI = function(q) {
   const input = document.getElementById('ai-query');
-  if (input) { input.value = q; askAI(); }
+  if (input) { input.value = q; window.askAI(); }
 };
 
-// --- ANALYTICS ---
-pages.analytics = async () => {
+// ============ PAGE: ANALYTICS ============
+async function loadAnalytics() {
   const main = document.getElementById('main-content');
-  main.innerHTML = '<div class="loading">Loading analytics...</div>';
-  const abc = await api('/analytics/abc-ved');
-  const consumption = await api('/analytics/consumption');
-  const summary = await api('/inventory/summary');
+  if (!main) return;
+  const [abc, consumption, summary] = await Promise.all([
+    api('/analytics/abc-ved'),
+    api('/analytics/consumption'),
+    api('/inventory/summary')
+  ]);
   main.innerHTML = `
-    <h3 class="mb-2">📈 Analytics</h3>
+    <h3 style="margin-bottom:1rem">📈 Analytics Dashboard</h3>
     <div class="grid-2 mb-2">
       <div class="card">
-        <h4 class="mb-1">ABC-VED Matrix</h4>
+        <h4 style="margin-bottom:0.75rem">📊 ABC-VED Matrix</h4>
         <div style="overflow-x:auto"><table><thead><tr><th>Item</th><th>Value</th><th>ABC</th><th>VED</th></tr></thead><tbody>
-          ${(abc.items||[]).slice(0,15).map(i => `<tr>
+          ${(abc.items || []).slice(0, 15).map(i => `<tr>
             <td>${escapeHtml(i.medicineName)}</td>
-            <td>₹${(i.value||0).toLocaleString('en-IN')}</td>
-            <td><span class="badge ${i.abc==='A'?'badge-red':i.abc==='B'?'badge-yellow':'badge-green'}">${i.abc}</span></td>
-            <td><span class="badge ${i.ved==='V'?'badge-red':i.ved==='E'?'badge-yellow':'badge-green'}">${i.ved}</span></td>
+            <td>${formatCurrency(i.value)}</td>
+            <td><span class="badge ${i.abc === 'A' ? 'badge-red' : i.abc === 'B' ? 'badge-yellow' : 'badge-green'}">${i.abc}</span></td>
+            <td><span class="badge ${i.ved === 'V' ? 'badge-red' : i.ved === 'E' ? 'badge-yellow' : 'badge-green'}">${i.ved}</span></td>
           </tr>`).join('') || '<tr><td colspan="4">No data</td></tr>'}
         </tbody></table></div>
-        <div style="font-size:0.85rem;color:var(--gray-500);margin-top:0.5rem">A=High value, B=Medium, C=Low | V=Vital, E=Essential, D=Desirable</div>
+        <div style="font-size:0.8rem;color:var(--gray-500);margin-top:0.5rem">
+          <strong>A</strong>=High value 70% • <strong>B</strong>=Medium 20% • <strong>C</strong>=Low 10%<br>
+          <strong>V</strong>=Vital • <strong>E</strong>=Essential • <strong>D</strong>=Desirable
+        </div>
       </div>
       <div>
-        <div class="card mb-2">
-          <h4 class="mb-1">Monthly Consumption</h4>
-          <div style="max-height:200px;overflow-y:auto">
-            <table><thead><tr><th>Month</th><th>Total</th></tr></thead><tbody>
-              ${(consumption.monthly||[]).map(m => `<tr><td>${m.month}</td><td>${m.total}</td></tr>`).join('') || '<tr><td>No data</td></tr>'}
-            </tbody></table>
-          </div>
+        <div class="card mb-1">
+          <h4 style="margin-bottom:0.5rem">📅 Monthly Consumption</h4>
+          <table><thead><tr><th>Month</th><th>Total Issued</th></tr></thead><tbody>
+            ${(consumption.monthly || []).map(m => `<tr><td>${m.month}</td><td>${m.total}</td></tr>`).join('') || '<tr><td colspan="2">No data yet</td></tr>'}
+          </tbody></table>
         </div>
         <div class="card">
-          <h4 class="mb-1">Top Consumed Items</h4>
-          <div style="max-height:200px;overflow-y:auto">
-            <table><thead><tr><th>Item</th><th>Total</th></tr></thead><tbody>
-              ${(consumption.byMedicine||[]).map(m => `<tr><td>${escapeHtml(m.name)}</td><td>${m.total}</td></tr>`).join('') || '<tr><td>No data</td></tr>'}
-            </tbody></table>
-          </div>
+          <h4 style="margin-bottom:0.5rem">🏆 Top 10 Most Used</h4>
+          <table><thead><tr><th>Medicine</th><th>Total</th></tr></thead><tbody>
+            ${(consumption.byMedicine || []).map(m => `<tr><td>${escapeHtml(m.name)}</td><td>${m.total}</td></tr>`).join('') || '<tr><td colspan="2">No data</td></tr>'}
+          </tbody></table>
         </div>
       </div>
     </div>
     <div class="card">
-      <h4 class="mb-1">Inventory Summary</h4>
+      <h4 style="margin-bottom:0.5rem">💼 Inventory Financial Summary</h4>
       <div class="grid-4">
         <div><strong>Total Items:</strong> ${summary.totalItems}</div>
-        <div><strong>Total Value:</strong> ₹${(summary.totalValue||0).toLocaleString('en-IN')}</div>
-        <div><strong>Expired Value:</strong> <span style="color:var(--danger)">₹${(summary.expiredValue||0).toLocaleString('en-IN')}</span></div>
+        <div><strong>Total Value:</strong> ${formatCurrency(summary.totalValue)}</div>
+        <div><strong>Expired Value:</strong> <span style="color:var(--danger)">${formatCurrency(summary.expiredValue)}</span></div>
         <div><strong>Low Stock:</strong> ${summary.lowStock}</div>
+      </div>
+    </div>`;
+}
+
+// ============ PAGE: REPORTS ============
+function renderReports() {
+  const main = document.getElementById('main-content');
+  if (!main) return;
+  const reportTypes = ['inventory', 'stock-in', 'stock-out', 'expiry', 'wastage', 'purchase', 'audit'];
+  main.innerHTML = `
+    <h3 style="margin-bottom:1rem">📄 Reports</h3>
+    <div class="grid-3 mb-2">
+      ${reportTypes.map(t => `
+        <div class="card" style="text-align:center;cursor:pointer;transition:all 0.2s" onclick="window.generateReport('${t}')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+          <div style="font-size:2rem;margin-bottom:0.5rem">📋</div>
+          <h4 style="text-transform:capitalize">${t.replace('-', ' ')}</h4>
+          <p style="font-size:0.8rem;color:var(--gray-500)">Click to generate</p>
+        </div>`).join('')}
+    </div>
+    <div id="report-result"></div>`;
+}
+
+window.generateReport = async function(type) {
+  const el = document.getElementById('report-result');
+  if (!el) return;
+  el.innerHTML = '<div class="loading">Generating report...</div>';
+  const res = await api('/reports/' + type);
+  if (!res || !res.data) { el.innerHTML = '<div class="alert-banner alert-critical">Failed to generate report</div>'; return; }
+  const cols = res.data.length ? Object.keys(res.data[0]) : [];
+  el.innerHTML = `
+    <div class="card">
+      <div class="flex justify-between items-center mb-1">
+        <h4>${escapeHtml(res.title)}</h4>
+        <div style="font-size:0.8rem;color:var(--gray-500)">${new Date(res.generatedAt).toLocaleString()} • ${res.data.length} records</div>
+      </div>
+      <div style="overflow-x:auto;max-height:500px;overflow-y:auto">
+        <table>${cols.length ? `<thead><tr>${cols.map(k => `<th>${escapeHtml(k)}</th>`).join('')}</tr></thead>` : ''}
+          <tbody>
+            ${res.data.map(row => `<tr>${cols.map(c => `<td style="font-size:0.8rem">${row[c] !== null && row[c] !== undefined ? escapeHtml(String(row[c])) : '-'}</td>`).join('')}</tr>`).join('') || '<tr><td colspan="' + (cols.length || 1) + '" class="text-center" style="padding:2rem">No data</td></tr>'}
+          </tbody>
+        </table>
       </div>
     </div>`;
 };
 
-// --- REPORTS ---
-pages.reports = () => {
-  document.getElementById('main-content').innerHTML = `
-    <h3 class"=mb-2">📄 Reports</h3>
-    <div class="grid-3">
-      ${['inventory','stock-in','stock-out','expiry','wastage','purchase','audit'].map(type => `
-        <div class="card" style="cursor:pointer" onclick="generateReport('${type}')">
-          <h4>📄 ${type.charAt(0).toUpperCase()+type.slice(1).replace('-',' ')} Report</h4>
-          <p style="font-size:0.85rem;color:var(--gray-500)">Click to generate</p>
-        </div>`).join('')}
-    </div>
-    <div id="report-result"></div>`;
-};
-
-window.generateReport = async (type) => {
-  const el = document.getElementById('report-result');
-  if (!el) return;
-  el.innerHTML = '<div class="loading">Generating report...</div>';
-  const res = await api(`/reports/${type}`);
-  el.innerHTML = `<div class="card mt-2">
-    <div class="flex justify-between items-center mb-1">
-      <h4>${escapeHtml(res.title)}</h4>
-      <div style="font-size:0.8rem;color:var(--gray-500)">${new Date(res.generatedAt).toLocaleString()}</div>
-    </div>
-    <div style="overflow-x:auto"><table><thead><tr>${res.data.length ? Object.keys(res.data[0]).map(k => `<th>${escapeHtml(k)}</th>`).join('') : ''}</tr></thead><tbody>
-      ${res.data.map(row => `<tr>${Object.values(row).map(v => `<td>${v!==null&&v!==undefined?escapeHtml(String(v)):'-'}</td>`).join('')}</tr>`).join('') || '<tr><td colspan="99" class="text-center" style="padding:2rem">No data found</td></tr>'}
-    </tbody></table></div>
-    <div style="margin-top:0.5rem;font-size:0.8rem;color:var(--gray-500)">${res.data.length} records</div>
-  </div>`;
-};
-
-// --- ALERTS ---
-pages.alerts = async () => {
+// ============ PAGE: ALERTS ============
+async function loadAlerts() {
   const main = document.getElementById('main-content');
-  main.innerHTML = '<div class="loading">Loading...</div>';
-  const notifs = await api('/notifications');
-  main.innerHTML = `<h3 class="mb-2">🔔 Notifications & Alerts</h3>
-    <div class="card">${notifs.map(n => `<div style="padding:0.75rem;border-left:4px solid ${n.type==='warning'?'var(--warning)':n.type==='error'?'var(--danger)':'var(--info)'};margin-bottom:0.5rem;background:var(--gray-50);border-radius:8px">
-      <div style="font-weight:500">${escapeHtml(n.title)}</div>
-      <div style="font-size:0.85rem;color:var(--gray-500)">${escapeHtml(n.message)}</div>
-      <div style="font-size:0.75rem;color:var(--gray-400)">${n.createdAt ? n.createdAt.split('T')[0] : ''}</div>
-    </div>`).join('') || '<div style="text-align:center;padding:2rem;color:var(--gray-400)">No notifications</div>'}</div>`;
-};
-
-// --- USERS ---
-pages.users = async () => {
-  const main = document.getElementById('main-content');
-  main.innerHTML = `<div class="flex justify-between items-center mb-2">
-    <h3>👥 Users</h3>
-    <button class="btn btn-primary" onclick="showAddUser()">+ Add User</button></div>
-    <div id="user-table"><div class="loading">Loading...</div></div>`;
-  const data = await api('/auth/users');
-  const el = document.getElementById('user-table'); if (!el) return;
-  el.innerHTML = `<table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Active</th><th>Created</th></tr></thead><tbody>
-    ${data.map(u => `<tr><td><strong>${escapeHtml(u.name)}</strong></td><td>${escapeHtml(u.email)}</td><td>${statusBadge(u.role)}</td><td>${u.isActive ? '✅' : '❌'}</td><td>${u.createdAt ? u.createdAt.split('T')[0] : ''}</td></tr>`).join('')}
-  </tbody></table>`;
-};
-
-// --- AUDIT ---
-pages.audit = async () => {
-  const main = document.getElementById('main-content');
-  main.innerHTML = '<div class="loading">Loading...</div>';
-  const data = await api('/audit-logs?limit=200');
-  main.innerHTML = `<h3 class="mb-2">📝 Audit Log</h3><div class="card" style="overflow-x:auto">
-    <table><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead><tbody>
-      ${data.map(l => `<tr><td>${l.createdAt ? l.createdAt.split('T')[0] : '-'}</td><td>${escapeHtml(l.userName||'')}</td>
-        <td>${statusBadge(l.action)}</td><td>${escapeHtml(l.entity)}</td><td>${escapeHtml(l.details||'')}</td></tr>`).join('') || '<tr><td colspan="5">No audit logs</td></tr>'}
-    </tbody></table></div>`;
-};
-
-// ============ MODALS ============
-window.showAddMedicine = async () => {
-  const cats = await api('/categories');
-  showModal('Add Medicine', `
-    <div class="form-group"><label>Name *</label><input type="text" id="m-name" class="w-full"></div>
-    <div class="form-group"><label>Category</label><select id="m-cat" class="w-full"><option value="">Select...</option>${cats.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('')}</select></div>
-    <div class="grid-2"><div class="form-group"><label>Form</label><input type="text" id="m-form" class="w-full"></div>
-    <div class="form-group"><label>Unit</label><input type="text" id="m-unit" value="pieces" class="w-full"></div></div>
-    <div class="grid-2"><div class="form-group"><label>Min Stock</label><input type="number" id="m-min" value="5" class="w-full"></div>
-    <div class="form-group"><label>Reorder Level</label><input type="number" id="m-reorder" value="10" class="w-full"></div></div>
-    <div class="grid-2"><div class="form-group"><label>Purchase Price</label><input type="number" id="m-price" value="0" class="w-full"></div>
-    <div class="form-group"><label>Barcode</label><input type="text" id="m-barcode" class="w-full"></div></div>
-    <div class="form-group"><label>Description</label><textarea id="m-desc" class="w-full" rows="2"></textarea></div>
-    <button class="btn btn-primary w-full" onclick="saveMedicine()">Save Medicine</button>`, '600px');
-};
-
-window.saveMedicine = async () => {
-  const body = {
-    name: document.getElementById('m-name').value,
-    categoryId: document.getElementById('m-cat').value || null,
-    form: document.getElementById('m-form').value || null,
-    unit: document.getElementById('m-unit').value || 'pieces',
-    minStock: parseInt(document.getElementById('m-min').value) || 5,
-    reorderLevel: parseInt(document.getElementById('m-reorder').value) || 10,
-    purchasePrice: parseFloat(document.getElementById('m-price').value) || 0,
-    barcode: document.getElementById('m-barcode').value || null,
-    description: document.getElementById('m-desc').value || null
-  };
-  if (!body.name) { showToast('Name required', 'error'); return; }
-  const res = await api('/medicines', { method: 'POST', body: JSON.stringify(body) });
-  if (res.id) { showToast('Medicine added!'); closeModal(); navigate('medicines'); }
-  else showToast(res.error || 'Error', 'error');
-};
-
-window.showAddBatch = (medId, medName) => {
-  showModal('Add Batch for ' + medName, `
-    <div class="form-group"><label>Batch Number *</label><input type="text" id="b-number" class="w-full"></div>
-    <div class="form-group"><label>Quantity *</label><input type="number" id="b-qty" class="w-full" min="1"></div>
-    <div class="form-group"><label>Purchase Price</label><input type="number" id="b-price" class="w-full" min="0" step="0.01"></div>
-    <div class="grid-2"><div class="form-group"><label>Mfg Date</label><input type="date" id="b-mfg" class="w-full"></div>
-    <div class="form-group"><label>Expiry Date *</label><input type="date" id="b-exp" class="w-full"></div></div>
-    <div class="form-group"><label>Supplier</label>
-      <select id="b-supplier" class="w-full"><option value="">Select...</option></select></div>
-    <button class="btn btn-primary w-full" onclick="saveBatch('${medId}')">Add Batch</button>`, '500px');
-  loadSupplierOptions();
-};
-
-async function loadSupplierOptions() {
-  const sups = await api('/suppliers');
-  const sel = document.getElementById('b-supplier');
-  if (sel) sel.innerHTML = '<option value="">Select...</option>' + sups.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+  if (!main) return;
+  const data = await api('/notifications');
+  main.innerHTML = `
+    <h3 style="margin-bottom:1rem">🔔 Notifications & Alerts</h3>
+    <div class="card">
+      ${(data && data.length) ? data.map(n => {
+        const color = n.type === 'warning' ? 'var(--warning)' : n.type === 'error' ? 'var(--danger)' : 'var(--info)';
+        return `<div style="padding:0.75rem;border-left:4px solid ${color};margin-bottom:0.5rem;background:var(--gray-50);border-radius:8px">
+          <div style="font-weight:500">${escapeHtml(n.title || 'Notification')}</div>
+          <div style="font-size:0.85rem;color:var(--gray-600);margin-top:0.25rem">${escapeHtml(n.message || '')}</div>
+          <div style="font-size:0.75rem;color:var(--gray-400);margin-top:0.25rem">${formatDate(n.createdAt)}</div>
+        </div>`;
+      }).join('') : '<div style="text-align:center;padding:3rem;color:var(--gray-400)">No notifications yet</div>'}
+    </div>`;
 }
 
-window.saveBatch = async (medId) => {
-  const body = {
-    batchNumber: document.getElementById('b-number').value,
-    quantity: parseInt(document.getElementById('b-qty').value),
-    purchasePrice: parseFloat(document.getElementById('b-price').value) || 0,
-    manufacturingDate: document.getElementById('b-mfg').value || null,
-    expiryDate: document.getElementById('b-exp').value || null,
-    supplierId: document.getElementById('b-supplier').value || null
-  };
-  if (!body.batchNumber || !body.quantity) { showToast('Fill required', 'error'); return; }
-  const res = await api(`/medicines/${medId}/batches`, { method: 'POST', body: JSON.stringify(body) });
-  if (res.id) { showToast('Batch added!'); closeModal(); navigate('medicines'); }
-  else showToast(res.error || 'Error', 'error');
+// ============ PAGE: USERS ============
+async function loadUsers() {
+  const main = document.getElementById('main-content');
+  if (!main) return;
+  const data = await api('/auth/users');
+  main.innerHTML = `
+    <div class="flex justify-between items-center mb-2">
+      <h3>👥 User Management</h3>
+      <button class="btn btn-primary" onclick="window.showAddUser()">➕ Add User</button>
+    </div>
+    <div class="card">
+      <table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Active</th><th>Created</th></tr></thead><tbody>
+      ${(data || []).map(u => `<tr>
+        <td><strong>${escapeHtml(u.name)}</strong></td>
+        <td>${escapeHtml(u.email)}</td>
+        <td>${statusBadge(u.role)}</td>
+        <td>${u.isActive ? '✅' : '❌'}</td>
+        <td>${formatDate(u.createdAt)}</td>
+      </tr>`).join('') || '<tr><td colspan="5" class="text-center">No users</td></tr>'}
+      </tbody></table>
+    </div>`;
+}
+
+window.showAddUser = function() {
+  showModal('Add New User', `
+    <div class="form-group"><label>Name *</label><input type="text" id="u-name"></div>
+    <div class="form-group"><label>Email *</label><input type="email" id="u-email"></div>
+    <div class="form-group"><label>Password *</label><input type="password" id="u-pass"></div>
+    <div class="form-group"><label>Role</label>
+      <select id="u-role">
+        <option value="STAFF">Staff</option>
+        <option value="MANAGER">Manager</option>
+        <option value="DOCTOR">Doctor</option>
+        <option value="ADMIN">Admin</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Phone</label><input type="text" id="u-phone"></div>
+    <button class="btn btn-primary w-full" onclick="window.saveUser()">💾 Save User</button>`);
 };
 
-window.showAddSupplier = () => {
-  showModal('Add Supplier', `
-    <div class="grid-2"><div class="form-group"><label>Name *</label><input type="text" id="s-name" class="w-full"></div>
-    <div class="form-group"><label>Contact Person</label><input type="text" id="s-contact" class="w-full"></div></div>
-    <div class="grid-2"><div class="form-group"><label>Email</label><input type="email" id="s-email" class="w-full"></div>
-    <div class="form-group"><label>Phone</label><input type="text" id="s-phone" class="w-full"></div></div>
-    <div class="grid-2"><div class="form-group"><label>City</label><input type="text" id="s-city" class="w-full"></div>
-    <div class="form-group"><label>Lead Time (days)</label><input type="number" id="s-lead" value="7" class="w-full"></div></div>
-    <div class="form-group"><label>Address</label><textarea id="s-addr" class="w-full" rows="2"></textarea></div>
-    <button class="btn btn-primary w-full" onclick="saveSupplier()">Save Supplier</button>`, '500px');
-};
-
-window.saveSupplier = async () => {
-  const body = {
-    name: document.getElementById('s-name').value,
-    contactPerson: document.getElementById('s-contact').value || null,
-    email: document.getElementById('s-email').value || null,
-    phone: document.getElementById('s-phone').value || null,
-    city: document.getElementById('s-city').value || null,
-    leadTime: parseInt(document.getElementById('s-lead').value) || 7,
-    address: document.getElementById('s-addr').value || null
-  };
-  if (!body.name) { showToast('Name required', 'error'); return; }
-  const res = await api('/suppliers', { method: 'POST', body: JSON.stringify(body) });
-  if (res.id) { showToast('Supplier added!'); closeModal(); navigate('suppliers'); }
-  else showToast(res.error || 'Error', 'error');
-};
-
-window.showAddUser = () => {
-  showModal('Add User', `
-    <div class="form-group"><label>Name *</label><input type="text" id="u-name" class="w-full"></div>
-    <div class="form-group"><label>Email *</label><input type="email" id="u-email" class="w-full"></div>
-    <div class="form-group"><label>Password *</label><input type="password" id="u-pass" class="w-full"></div>
-    <div class="form-group"><label>Role</label><select id="u-role" class="w-full"><option value="STAFF">Staff</option><option value="MANAGER">Manager</option><option value="DOCTOR">Doctor</option><option value="ADMIN">Admin</option></select></div>
-    <div class="form-group"><label>Phone</label><input type="text" id="u-phone" class="w-full"></div>
-    <button class="btn btn-primary w-full" onclick="saveUser()">Save User</button>`, '500px');
-};
-
-window.saveUser = async () => {
+window.saveUser = async function() {
   const body = {
     name: document.getElementById('u-name').value,
     email: document.getElementById('u-email').value,
@@ -845,234 +1211,121 @@ window.saveUser = async () => {
     role: document.getElementById('u-role').value,
     phone: document.getElementById('u-phone').value || null
   };
-  if (!body.name || !body.email || !body.password) { showToast('Fill required', 'error'); return; }
+  if (!body.name || !body.email || !body.password) { showToast('Required fields missing', 'error'); return; }
   const res = await api('/auth/users', { method: 'POST', body: JSON.stringify(body) });
-  if (res.id) { showToast('User added!'); closeModal(); navigate('users'); }
+  if (res.id) { showToast('✅ User added!'); closeModal(); window.navigate('users'); }
   else showToast(res.error || 'Error', 'error');
 };
 
-window.showCreatePO = async () => {
-  const sups = await api('/suppliers');
-  const meds = await api('/medicines');
-  showModal('Create Purchase Order', `
-    <div class="form-group"><label>Supplier *</label>
-      <select id="po-supplier" class="w-full"><option value="">Select...</option>${sups.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('')}</select></div>
-    <div class="form-group"><label>Expected Delivery</label><input type="date" id="po-delivery" class="w-full"></div>
-    <div class="form-group"><label>Notes</label><textarea id="po-notes" class="w-full" rows="2"></textarea></div>
-    <h4 class="mb-1">Items</h4>
-    <div id="po-items">
-      <div class="po-item-row flex gap-1 mb-1">
-        <select class="po-med" style="flex:2;padding:0.5rem;border:1px solid var(--gray-300);border-radius:8px"><option value="">Select medicine...</option>${meds.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('')}</select>
-        <input type="number" class="po-qty" placeholder="Qty" style="flex:1;padding:0.5rem;border:1px solid var(--gray-300);border-radius:8px">
-        <input type="number" class="po-price" placeholder="Unit Price" style="flex:1;padding:0.5rem;border:1px solid var(--gray-300);border-radius:8px">
-      </div>
-    </div>
-    <button class="btn btn-sm btn-outline mb-2" onclick="addPOItem()">+ Add Item</button>
-    <button class="btn btn-primary w-full" onclick="createPO()">Create Purchase Order</button>`, '700px');
-};
-
-window.addPOItem = () => {
-  const container = document.getElementById('po-items');
-  if (!container) return;
-  const row = document.createElement('div'); row.className = 'po-item-row flex gap-1 mb-1';
-  row.innerHTML = `<select class="po-med" style="flex:2;padding:0.5rem;border:1px solid var(--gray-300);border-radius:8px"><option value="">Select...</option></select>
-    <input type="number" class="po-qty" placeholder="Qty" style="flex:1;padding:0.5rem;border:1px solid var(--gray-300);border-radius:8px">
-    <input type="number" class="po-price" placeholder="Price" style="flex:1;padding:0.5rem;border:1px solid var(--gray-300);border-radius:8px">
-    <button class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">✕</button>`;
-  // Clone medicine options
-  const origSelect = document.querySelector('.po-med');
-  if (origSelect) row.querySelector('.po-med').innerHTML = origSelect.innerHTML;
-  container.appendChild(row);
-};
-
-window.createPO = async () => {
-  const supplierId = document.getElementById('po-supplier').value;
-  const rows = document.querySelectorAll('.po-item-row');
-  const items = [];
-  rows.forEach(row => {
-    const med = row.querySelector('.po-med')?.value;
-    const qty = parseInt(row.querySelector('.po-qty')?.value);
-    const price = parseFloat(row.querySelector('.po-price')?.value) || 0;
-    if (med && qty) items.push({ medicineId: med, quantity: qty, unitPrice: price });
-  });
-  if (!supplierId || !items.length) { showToast('Supplier and at least one item required', 'error'); return; }
-  const res = await api('/purchase-orders', { method: 'POST', body: JSON.stringify({
-    supplierId, items, expectedDelivery: document.getElementById('po-delivery').value || null,
-    notes: document.getElementById('po-notes').value || null
-  })});
-  if (res.id) { showToast(`PO ${res.poNumber} created!`); closeModal(); navigate('purchase-orders'); }
-  else showToast(res.error || 'Error', 'error');
-};
-
-window.approvePO = async (id) => {
-  await api(`/purchase-orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'approved' }) });
-  showToast('PO approved!'); navigate('purchase-orders');
-};
-
-window.showReceivePO = async (id) => {
-  const po = await api(`/purchase-orders/${id}`);
-  showModal('Receive PO Items', `
-    ${(po.items||[]).map(item => `
-      <div class="flex gap-1 items-center mb-1" style="align-items:center">
-        <span style="flex:2">${escapeHtml(item.medicineName||'Item')}</span>
-        <span style="flex:1">Ordered: ${item.quantity}</span>
-        <span style="flex:1">Received: ${item.receivedQuantity||0}</span>
-        <input type="number" class="rec-qty" data-id="${item.id}" value="${item.quantity - (item.receivedQuantity||0)}" min="0" max="${item.quantity}" style="flex:1;padding:0.5rem;border:1px solid var(--gray-300);border-radius:8px">
-      </div>`).join('')}
-    <button class="btn btn-primary w-full mt-2" onclick="receivePO('${id}')">Confirm Receive</button>`, '600px');
-};
-
-window.receivePO = async (id) => {
-  const items = [];
-  document.querySelectorAll('.rec-qty').forEach(el => {
-    const qty = parseInt(el.value);
-    if (qty > 0) items.push({ id: el.dataset.id, receivedQuantity: qty });
-  });
-  if (!items.length) { showToast('No items to receive', 'error'); return; }
-  const res = await api(`/purchase-orders/${id}/receive`, { method: 'POST', body: JSON.stringify({ items }) });
-  if (res.message) { showToast('Items received! Inventory updated'); closeModal(); navigate('purchase-orders'); }
-  else showToast(res.error || 'Error', 'error');
-};
-
-window.showTransferForm = async () => {
-  const depts = await api('/departments');
-  const meds = await api('/medicines');
-  showModal('Stock Transfer (Redistribution)', `
-    <div class="form-group"><label>Medicine</label>
-      <select id="tr-med" class="w-full"><option value="">Select...</option>${meds.map(m => `<option value="${m.id}">${escapeHtml(m.name)} (Stock: ${m.currentStock||0})</option>`).join('')}</select></div>
-    <div class="form-group"><label>Quantity</label><input type="number" id="tr-qty" class="w-full" min="1"></div>
-    <div class="grid-2"><div class="form-group"><label>From Department</label>
-      <select id="tr-from" class="w-full"><option value="">Select...</option>${depts.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('')}</select></div>
-    <div class="form-group"><label>To Department</label>
-      <select id="tr-to" class="w-full"><option value="">Select...</option>${depts.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('')}</select></div></div>
-    <div class="form-group"><label>Notes</label><textarea id="tr-notes" class="w-full" rows="2"></textarea></div>
-    <button class="btn btn-primary w-full" onclick="createTransfer()">Complete Transfer</button>`, '500px');
-};
-
-window.createTransfer = async () => {
-  const medId = document.getElementById('tr-med').value;
-  const fromDept = document.getElementById('tr-from').value;
-  const toDept = document.getElementById('tr-to').value;
-  const qty = parseInt(document.getElementById('tr-qty').value);
-  if (!medId || !fromDept || !toDept || !qty) { showToast('Fill all required', 'error'); return; }
-  if (fromDept === toDept) { showToast('Departments must differ', 'error'); return; }
-  // Get first available batch
-  const med = await api(`/medicines/${medId}`);
-  const batch = med.batches?.find(b => b.quantity > 0);
-  if (!batch) { showToast('No stock available', 'error'); return; }
-  const res = await api('/transfers', { method: 'POST', body: JSON.stringify({
-    batchId: batch.id, fromDepartmentId: fromDept, toDepartmentId: toDept, quantity: qty,
-    notes: document.getElementById('tr-notes').value || null
-  })});
-  if (res.message) { showToast('Transfer completed!'); closeModal(); navigate('transfers'); }
-  else showToast(res.error || 'Error', 'error');
-};
-
-window.showWastage = (batchId, medName, batchNum, maxQty) => {
-  showModal('Record Wastage - ' + medName, `
-    <p style="font-size:0.85rem;color:var(--gray-500)">Batch: ${escapeHtml(batchNum)} | Available: ${maxQty}</p>
-    <div class="form-group"><label>Quantity *</label><input type="number" id="w-qty" class="w-full" min="1" max="${maxQty}"></div>
-    <div class="form-group"><label>Reason *</label><select id="w-reason" class="w-full"><option value="expired">Expired</option><option value="damaged">Damaged</option><option value="lost">Lost</option><option value="rejected">Rejected</option></select></div>
-    <div class="form-group"><label>Notes</label><textarea id="w-notes" class="w-full" rows="2"></textarea></div>
-    <button class="btn btn-danger w-full" onclick="saveWastage('${batchId}')">Record Wastage</button>`, '500px');
-};
-
-window.saveWastage = async (batchId) => {
-  const res = await api('/wastage', { method: 'POST', body: JSON.stringify({
-    batchId, quantity: parseInt(document.getElementById('w-qty').value),
-    reason: document.getElementById('w-reason').value,
-    notes: document.getElementById('w-notes').value || null
-  })});
-  if (res.message) { showToast('Wastage recorded'); closeModal(); navigate('medicines'); }
-  else showToast(res.error || 'Error', 'error');
-};
-
-window.showSupplierDetail = async (id) => {
-  const sup = await api(`/suppliers/${id}`);
-  if (!sup || sup.error) return;
-  showModal(escapeHtml(sup.name), `
-    <div style="font-size:0.85rem">
-      <p><strong>Contact:</strong> ${escapeHtml(sup.contactPerson||'-')}</p>
-      <p><strong>Email:</strong> ${escapeHtml(sup.email||'-')}</p>
-      <p><strong>Phone:</strong> ${escapeHtml(sup.phone||'-')}</p>
-      <p><strong>City:</strong> ${escapeHtml(sup.city||'-')}</p>
-      <p><strong>Lead Time:</strong> ${sup.leadTime} days</p>
-      <p><strong>Payment Terms:</strong> ${escapeHtml(sup.paymentTerms||'-')}</p>
-    </div>
-    <h4 class="mt-2 mb-1">Recent POs</h4>
-    ${(sup.purchaseOrders||[]).map(po => `<div style="font-size:0.85rem;padding:0.25rem 0">${escapeHtml(po.poNumber)} - ${statusBadge(po.status)} - ₹${(po.totalAmount||0).toLocaleString('en-IN')}</div>`).join('') || '<div style="font-size:0.85rem;color:var(--gray-400)">No POs</div>'}
-  `, '500px');
-};
+// ============ PAGE: AUDIT ============
+async function loadAudit() {
+  const main = document.getElementById('main-content');
+  if (!main) return;
+  const data = await api('/audit-logs?limit=100');
+  main.innerHTML = `
+    <h3 style="margin-bottom:1rem">📝 Audit Log</h3>
+    <div class="card" style="overflow-x:auto;max-height:600px;overflow-y:auto">
+      <table><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead><tbody>
+      ${(data || []).map(l => `<tr>
+        <td style="font-size:0.8rem">${formatDate(l.createdAt)}</td>
+        <td>${escapeHtml(l.userName || '-')}</td>
+        <td>${statusBadge(l.action)}</td>
+        <td>${escapeHtml(l.entity)}</td>
+        <td style="font-size:0.8rem">${escapeHtml(l.details || '')}</td>
+      </tr>`).join('') || '<tr><td colspan="5" class="text-center">No audit logs yet</td></tr>'}
+      </tbody></table>
+    </div>`;
+}
 
 // ============ MODAL HELPERS ============
-function showModal(title, content, width) {
-  const overlay = document.createElement('div'); overlay.className = 'modal-overlay'; overlay.id = 'modal-overlay';
-  overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
-  overlay.innerHTML = `<div class="modal" style="max-width:${width||'600px'}"><div class="flex justify-between items-center mb-1">
-    <h3>${title}</h3><button class="btn btn-sm btn-outline" onclick="closeModal()">✕</button></div>${content}</div>`;
+function showModal(title, content, maxWidth) {
+  closeModal();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'modal-overlay';
+  overlay.onclick = e => { if (e.target === overlay) closeModal(); };
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  if (maxWidth) modal.style.maxWidth = maxWidth;
+  modal.innerHTML = `<div class="flex justify-between items-center mb-1">
+    <h3>${escapeHtml(title)}</h3>
+    <button class="btn btn-sm btn-outline" onclick="closeModal()">✕</button>
+  </div>${content}`;
+  overlay.appendChild(modal);
   document.body.appendChild(overlay);
 }
 
-window.closeModal = () => {
+window.closeModal = function() {
   const el = document.getElementById('modal-overlay');
   if (el) el.remove();
 };
 
-// ============ RENDER ============
-function renderApp() {
-  if (state.page === 'login') { pages.login(); return; }
-  const app = document.getElementById('app');
-  app.innerHTML = `
-    <div class="app">
-      <div class="sidebar">
-        <div class="sidebar-header">
-          <h2>🌿 MediTrack</h2>
-          <small>Ayurvedic Hospital</small>
-        </div>
-        <nav class="sidebar-nav">${Sidebar()}</nav>
-        <div class="sidebar-footer">
-          <div>${state.user?.name||''}</div>
-          <div style="font-size:0.75rem;color:var(--gray-500)">${state.user?.role||''}</div>
-          <button class="btn btn-sm btn-outline mt-1" style="color:white;border-color:var(--gray-600)" onclick="logout()">Logout</button>
-        </div>
-      </div>
-      <div class="main">
-        <div class="topbar">
-          <h3>${getPageTitle()}</h3>
-          <div class="topbar-right">
-            <span class="user-info">${state.user?.name||''} (${state.user?.role||''})</span>
-          </div>
-        </div>
-        <div class="content" id="main-content">
-          <div class="loading">Loading...</div>
-        </div>
-      </div>
-    </div>`;
-  // Load page content
-  const pageFn = pages[state.page];
-  if (pageFn) pageFn();
-  else { pages.dashboard(); state.page = 'dashboard'; }
+// ============ INITIALIZATION ============
+// Check if user is already logged in
+const savedToken = localStorage.getItem('meditrack_token');
+if (savedToken) {
+  state.token = savedToken;
+  api('/auth/me').then(user => {
+    if (user && user.id) {
+      state.user = user;
+      state.page = 'dashboard';
+      renderApp();
+    } else {
+      localStorage.removeItem('meditrack_token');
+      renderLogin();
+    }
+  }).catch(() => renderLogin());
+} else {
+  renderLogin();
 }
 
-function getPageTitle() {
-  const titles = {
-    dashboard: '📊 Dashboard', inventory: '📦 Inventory', medicines: '💊 Medicines',
-    'stock-in': '📥 Stock In', 'stock-out': '📤 Stock Out', expiry: '⏰ Expiry',
-    suppliers: '🏭 Suppliers', 'purchase-orders': '📋 Purchase Orders',
-    transfers: '🔄 Transfers', 'ai-advisor': '🤖 AI Advisor',
-    analytics: '📈 Analytics', reports: '📄 Reports',
-    alerts: '🔔 Alerts', users: '👥 Users', audit: '📝 Audit'
-  };
-  return titles[state.page] || 'MediTrack';
-}
-
-window.logout = () => {
-  api('/auth/logout', { method: 'POST' });
-  state.token = null; state.user = null; state.page = 'login'; renderApp();
+// Save token on successful login (intercept login flow)
+const origHandleLogin = window.handleLogin;
+window.handleLogin = async function() {
+  const email = (document.getElementById('login-email') || {}).value || '';
+  const password = (document.getElementById('login-password') || {}).value || '';
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+  if (errEl) errEl.classList.add('hidden');
+  if (!email || !password) {
+    if (errEl) { errEl.textContent = 'Email and password required'; errEl.classList.remove('hidden'); }
+    return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = 'Logging in...'; }
+  try {
+    const res = await fetch(window.location.origin + '/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (data.token) {
+      state.token = data.token;
+      state.user = data.user;
+      state.page = 'dashboard';
+      localStorage.setItem('meditrack_token', data.token);
+      showToast('Welcome, ' + data.user.name + '!');
+      renderApp();
+    } else {
+      if (btn) { btn.disabled = false; btn.textContent = '🔐 Login to MediTrack'; }
+      if (errEl) { errEl.textContent = data.error || 'Login failed'; errEl.classList.remove('hidden'); }
+    }
+  } catch (err) {
+    if (btn) { btn.disabled = false; btn.textContent = '🔐 Login to MediTrack'; }
+    if (errEl) { errEl.textContent = 'Cannot reach server'; errEl.classList.remove('hidden'); }
+  }
 };
 
-// ============ INIT ============
-renderApp();
+window.logout = async function() {
+  try { await api('/auth/logout', { method: 'POST' }); } catch(e) {}
+  state.token = null;
+  state.user = null;
+  state.page = 'login';
+  localStorage.removeItem('meditrack_token');
+  renderApp();
+};
+
+console.log('MediTrack ready');
 </script>
 </body>
 </html>

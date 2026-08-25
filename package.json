@@ -2,54 +2,17 @@
   "name": "meditrack",
   "version": "1.0.0",
   "description": "MediTrack - Intelligent Inventory Management for Ayurvedic Hospitals",
-  "main": "electron/main.js",
+  "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "node server/index.js & (cd frontend && npx http-server -p 5173 -c-1 --cors)",
-    "electron": "electron .",
-    "seed": "node server/seed.js",
-    "setup": "node scripts/setup.js",
-    "build": "node scripts/build.js",
-    "package": "electron-builder --win",
-    "package-linux": "electron-builder --linux"
-  },
-  "build": {
-    "appId": "com.meditrack.app",
-    "productName": "MediTrack",
-    "directories": { "output": "release" },
-    "files": [
-      "electron/**/*",
-      "server/**/*",
-      "frontend/**/*",
-      "assets/**/*",
-      "package.json"
-    ],
-    "win": {
-      "target": ["nsis"],
-      "icon": "assets/icon.png"
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "shortcutName": "MediTrack"
-    }
+    "dev": "node server/index.js"
   },
   "dependencies": {
-    "sql.js": "^1.9.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
-    "qrcode": "^1.5.3",
-    "uuid": "^9.0.0",
-    "xlsx": "^0.18.5"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2",
-    "electron": "^28.0.0",
-    "electron-builder": "^24.9.1",
-    "http-server": "^14.1.1"
+    "sql.js": "^1.9.0",
+    "uuid": "^9.0.0"
   }
 }
